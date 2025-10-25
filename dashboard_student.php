@@ -8,8 +8,66 @@ $db = new Database();
 $conn = $db->getConnection();
 
 $student_id = $_SESSION['student_id'];
+
+function get_student_details($conn, $student_id)
+{
+    try {
+        $sql = "SELECT * FROM students WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$student_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return null;
+    }
+}
+
+function get_fee_summary($conn, $student_id)
+{
+    try {
+        $sql = "SELECT ft.name, ft.total_amount, 
+                       COALESCE(SUM(t.amount_paid), 0) as paid_amount,
+                       (ft.total_amount - COALESCE(SUM(t.amount_paid), 0)) as remaining_amount
+                FROM fee_types ft
+                LEFT JOIN transactions t ON ft.id = t.fee_type_id AND t.student_id = ?
+                WHERE ft.is_active = 1
+                GROUP BY ft.id, ft.name, ft.total_amount";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$student_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return [];
+    }
+}
+
+function get_active_counters($conn)
+{
+    try {
+        $sql = "SELECT c.*, 
+                       GROUP_CONCAT(DISTINCT ft.name) as fee_types,
+                       a.is_active as accountant_status
+                FROM counters c 
+                LEFT JOIN counter_fee_types cft ON c.id = cft.counter_id 
+                LEFT JOIN fee_types ft ON cft.fee_type_id = ft.id 
+                LEFT JOIN accountants a ON c.id = a.counter_id
+                WHERE c.is_active = 1
+                GROUP BY c.id 
+                ORDER BY c.name";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return [];
+    }
+}
+
 $student = get_student_details($conn, $student_id);
 $fee_summary = get_fee_summary($conn, $student_id);
+$counters = get_active_counters($conn);
+
+if (!$student) {
+    header('Location: logout.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -303,6 +361,25 @@ $fee_summary = get_fee_summary($conn, $student_id);
         .counter-card p i {
             color: #667eea;
             width: 16px;
+        }
+
+        .counter-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
         }
 
         /* Fee Form */
@@ -628,8 +705,52 @@ $fee_summary = get_fee_summary($conn, $student_id);
         <div id="fee-payment" class="section">
             <div class="counters-section">
                 <h2><i class="fas fa-desktop"></i> Select Counter for Payment</h2>
+
+
+
                 <div class="counters-grid" id="counters-grid">
-                    <!-- Counters will be loaded via JavaScript -->
+                    <?php if (empty($counters)): ?>
+                        <div style="text-align: center; padding: 40px; color: #5a6c7d;">
+                            <i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                            <h3>No Counters Available</h3>
+                            <p>All counters are currently inactive. Please check back later.</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($counters as $counter): ?>
+                            <div class="counter-card">
+                                <h3>
+                                    <i class="fas fa-desktop"></i> <?php echo $counter['name']; ?>
+                                    <span
+                                        class="counter-status <?php echo ($counter['is_active'] && $counter['accountant_status']) ? 'status-active' : 'status-inactive'; ?>">
+                                        <?php echo ($counter['is_active'] && $counter['accountant_status']) ? 'ACTIVE' : 'INACTIVE'; ?>
+                                    </span>
+                                </h3>
+                                <p><i class="fas fa-map-marker-alt"></i> <strong>Location:</strong>
+                                    <?php echo $counter['location']; ?></p>
+                                <p><i class="fas fa-money-bill-wave"></i> <strong>Accepts:</strong>
+                                    <?php echo $counter['fee_types'] ?: 'No fees assigned'; ?></p>
+                                <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                                    <small style="color: #5a6c7d;">
+                                        <?php if ($counter['is_active'] && $counter['accountant_status']): ?>
+                                            ✅ Counter is active - You can join queue
+                                        <?php else: ?>
+                                            ❌ Counter is inactive - Please check back later
+                                        <?php endif; ?>
+                                    </small>
+                                </div>
+                                <?php if ($counter['is_active'] && $counter['accountant_status']): ?>
+                                    <button onclick="selectCounter(<?php echo $counter['id']; ?>, this)" class="btn btn-primary"
+                                        style="margin-top: 10px; width: 100%;">
+                                        <i class="fas fa-hand-pointer"></i> Select This Counter
+                                    </button>
+                                <?php else: ?>
+                                    <button class="btn btn-secondary" style="margin-top: 10px; width: 100%;" disabled>
+                                        <i class="fas fa-ban"></i> Counter Inactive
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
 
                 <div id="fee-form-container">
@@ -692,9 +813,9 @@ $fee_summary = get_fee_summary($conn, $student_id);
         let selectedCounterId = null;
         let queueInterval = null;
 
-        // Load counters on page load
+        // Show dashboard by default
         document.addEventListener('DOMContentLoaded', function () {
-            loadCounters();
+            showSection('fee-payment');
             checkCurrentQueue();
         });
 
@@ -717,46 +838,17 @@ $fee_summary = get_fee_summary($conn, $student_id);
             event.target.classList.add('active');
         }
 
-        function loadCounters() {
-            fetch('ajax/get_counters.php')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const countersGrid = document.getElementById('counters-grid');
-                    countersGrid.innerHTML = '';
+        function selectCounter(counterId, element) {
+            // Get the counter card that was clicked
+            const counterCard = element.closest('.counter-card');
+            const statusElement = counterCard.querySelector('.counter-status');
 
-                    if (data.length === 0) {
-                        countersGrid.innerHTML = '<p style="text-align: center; color: #5a6c7d; padding: 40px;">No counters available at the moment. Please check back later.</p>';
-                        return;
-                    }
+            // Check if counter is active
+            if (statusElement.textContent.trim() === 'INACTIVE') {
+                alert('This counter is currently inactive. Please select an active counter.');
+                return;
+            }
 
-                    data.forEach(counter => {
-                        const counterCard = document.createElement('div');
-                        counterCard.className = 'counter-card';
-                        counterCard.innerHTML = `
-                            <h3><i class="fas fa-desktop"></i> ${counter.name}</h3>
-                            <p><i class="fas fa-map-marker-alt"></i> <strong>Location:</strong> ${counter.location}</p>
-                            <p><i class="fas fa-money-bill-wave"></i> <strong>Accepts:</strong> ${counter.fee_types || 'No fees assigned'}</p>
-                            <p><i class="fas fa-circle"></i> <strong>Status:</strong> <span style="color: #28a745;">Active</span></p>
-                            <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                                <small style="color: #5a6c7d;">Click to select this counter</small>
-                            </div>
-                        `;
-                        counterCard.onclick = () => selectCounter(counter.id);
-                        countersGrid.appendChild(counterCard);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error loading counters:', error);
-                    document.getElementById('counters-grid').innerHTML = '<p style="text-align: center; color: #dc3545; padding: 20px;"><i class="fas fa-exclamation-triangle"></i> Error loading counters. Please refresh the page.</p>';
-                });
-        }
-
-        function selectCounter(counterId) {
             selectedCounterId = counterId;
 
             fetch(`ajax/get_counter_fees.php?counter_id=${counterId}&student_id=<?php echo $student_id; ?>`)
@@ -1006,7 +1098,6 @@ $fee_summary = get_fee_summary($conn, $student_id);
                                 queueInterval = null;
                             }
                             showSection('fee-payment');
-                            loadCounters();
                             // Hide fee form
                             document.getElementById('fee-form-container').style.display = 'none';
                             alert('You have left the queue successfully.');
@@ -1019,6 +1110,32 @@ $fee_summary = get_fee_summary($conn, $student_id);
                         alert('Error leaving queue. Please try again.');
                     });
             }
+        }
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+
+            // Show/hide fee summary based on section
+            const feeSummary = document.querySelector('.fee-summary');
+            if (sectionName === 'queue-status') {
+                feeSummary.style.display = 'none';
+            } else {
+                feeSummary.style.display = 'block';
+            }
+
+            // Show selected section
+            const targetSection = document.getElementById(sectionName);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+
+            // Update active nav link
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
         }
     </script>
 </body>
