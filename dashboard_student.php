@@ -18,6 +18,7 @@ $fee_summary = get_fee_summary($conn, $student_id);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard - College Fee System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -26,50 +27,84 @@ $fee_summary = get_fee_summary($conn, $student_id);
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
+            min-height: 100vh;
         }
 
         /* Sidebar */
         .sidebar {
-            width: 300px;
-            background: #2c3e50;
-            color: white;
+            width: 320px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             height: 100vh;
-            padding: 20px;
+            padding: 25px;
             position: fixed;
+            box-shadow: 5px 0 25px rgba(0, 0, 0, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .profile {
             text-align: center;
             margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
         }
 
         .profile-img {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
-            background: #34495e;
-            margin: 0 auto 15px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            margin: 0 auto 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
+            font-size: 48px;
+            color: white;
+            border: 4px solid white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-img img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
         }
 
         .student-info {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
         }
 
         .student-info h3 {
-            margin-bottom: 10px;
-            color: #ecf0f1;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .student-info h3 i {
+            color: #667eea;
         }
 
         .student-info p {
-            margin: 5px 0;
-            color: #bdc3c7;
+            margin: 8px 0;
+            color: #5a6c7d;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .student-info p strong {
+            color: #2c3e50;
         }
 
         /* Navigation */
@@ -78,171 +113,445 @@ $fee_summary = get_fee_summary($conn, $student_id);
         }
 
         .nav-links li {
-            margin: 10px 0;
+            margin: 8px 0;
         }
 
         .nav-links a {
-            color: #ecf0f1;
+            color: #5a6c7d;
             text-decoration: none;
-            padding: 10px;
-            display: block;
-            border-radius: 5px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
 
         .nav-links a:hover,
         .nav-links a.active {
-            background: #34495e;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-links a i {
+            width: 20px;
+            text-align: center;
         }
 
         /* Main Content */
         .main-content {
-            margin-left: 300px;
-            padding: 20px;
-            width: calc(100% - 300px);
+            margin-left: 320px;
+            padding: 30px;
+            width: calc(100% - 320px);
+            min-height: 100vh;
         }
 
         .header {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .header h1 {
             color: #2c3e50;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: #5a6c7d;
+            font-size: 1.1rem;
         }
 
         /* Fee Summary */
         .fee-summary {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .fee-summary h2 {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             color: #2c3e50;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fee-summary h2 i {
+            color: #667eea;
         }
 
         .fee-table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 15px;
         }
 
         .fee-table th,
         .fee-table td {
-            padding: 12px;
+            padding: 15px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #eaeaea;
         }
 
         .fee-table th {
+            background: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .fee-table tr:hover {
             background: #f8f9fa;
         }
 
         .amount-paid {
             color: #28a745;
+            font-weight: 600;
         }
 
         .amount-remaining {
             color: #dc3545;
+            font-weight: 600;
         }
 
         /* Counters Grid */
         .counters-section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .counters-section h2 {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             color: #2c3e50;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .counters-section h2 i {
+            color: #667eea;
         }
 
         .counters-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 20px;
         }
 
         .counter-card {
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 10px;
+            background: white;
+            border: 2px solid #eaeaea;
+            padding: 25px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .counter-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
         }
 
         .counter-card:hover {
-            border-color: #007bff;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
         }
 
         .counter-card h3 {
             color: #2c3e50;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            font-size: 1.3rem;
         }
 
         .counter-card p {
-            margin: 5px 0;
-            color: #666;
+            margin: 8px 0;
+            color: #5a6c7d;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .counter-card p i {
+            color: #667eea;
+            width: 16px;
         }
 
         /* Fee Form */
         #fee-form-container {
             display: none;
-            margin-top: 20px;
-            padding: 20px;
+            margin-top: 25px;
+            padding: 25px;
             background: #f8f9fa;
-            border-radius: 10px;
+            border-radius: 12px;
+            border: 2px dashed #667eea;
         }
 
         .fee-option {
-            margin: 10px 0;
-            padding: 10px;
+            margin: 15px 0;
+            padding: 15px;
             background: white;
-            border-radius: 5px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .fee-option:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .amount-input {
-            margin-top: 5px;
-            padding: 8px;
+            margin-top: 10px;
+            padding: 10px;
             width: 200px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            border: 2px solid #eaeaea;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .amount-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         /* Queue Status */
         .queue-status {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
         }
 
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #007bff;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 2s linear infinite;
-            margin: 20px auto;
+        .queue-animation {
+            margin: 30px 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            border: 3px solid #eaeaea;
+            position: relative;
+            overflow: hidden;
         }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
+        .queue-line {
+            position: relative;
+            height: 120px;
+            background: repeating-linear-gradient(90deg,
+                    transparent,
+                    transparent 40px,
+                    #667eea 40px,
+                    #667eea 42px);
+            margin: 20px 0;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .walking-person {
+            position: absolute;
+            bottom: 10px;
+            font-size: 3rem;
+            animation: walk 2s linear infinite;
+            transform-origin: bottom;
+        }
+
+        .person-male {
+            color: #3498db;
+        }
+
+        .person-female {
+            color: #e74c3c;
+        }
+
+        .current-user {
+            color: #2ecc71;
+            font-size: 3.5rem;
+            z-index: 10;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        @keyframes walk {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
             }
 
+            25% {
+                transform: translateY(-5px) rotate(-2deg);
+            }
+
+            50% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            75% {
+                transform: translateY(-3px) rotate(2deg);
+            }
+        }
+
+        @keyframes bounce {
+
+            0%,
             100% {
-                transform: rotate(360deg);
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .queue-info {
+            margin: 25px 0;
+            padding: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 12px;
+            color: white;
+        }
+
+        .queue-info h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+        }
+
+        .position-number {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .wait-time {
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+
+        .queue-actions {
+            margin-top: 25px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #e83e8c);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 193, 7, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 280px;
+            }
+
+            .main-content {
+                margin-left: 280px;
+                width: calc(100% - 280px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .counters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .queue-actions {
+                flex-direction: column;
             }
         }
     </style>
@@ -251,12 +560,10 @@ $fee_summary = get_fee_summary($conn, $student_id);
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
-        <!-- In the sidebar section of dashboard_student.php -->
         <div class="profile">
             <div class="profile-img">
                 <?php if (!empty($student['profile_picture']) && file_exists($student['profile_picture'])): ?>
-                    <img src="<?php echo $student['profile_picture']; ?>?t=<?php echo time(); ?>" alt="Profile Picture"
-                        style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    <img src="<?php echo $student['profile_picture']; ?>?t=<?php echo time(); ?>" alt="Profile Picture">
                 <?php else: ?>
                     <?php echo strtoupper(substr($student['full_name'], 0, 1)); ?>
                 <?php endif; ?>
@@ -266,18 +573,20 @@ $fee_summary = get_fee_summary($conn, $student_id);
         </div>
 
         <div class="student-info">
-            <h3>Student Details</h3>
-            <p><strong>Year:</strong> <?php echo $student['academic_year']; ?></p>
-            <p><strong>Branch:</strong> <?php echo $student['branch']; ?></p>
-            <p><strong>Email:</strong> <?php echo $student['email']; ?></p>
-            <p><strong>Phone:</strong> <?php echo $student['phone']; ?></p>
+            <h3><i class="fas fa-user-graduate"></i> Student Details</h3>
+            <p><strong>Year:</strong> <span><?php echo $student['academic_year']; ?></span></p>
+            <p><strong>Branch:</strong> <span><?php echo $student['branch']; ?></span></p>
+            <p><strong>Email:</strong> <span><?php echo $student['email']; ?></span></p>
+            <p><strong>Phone:</strong> <span><?php echo $student['phone']; ?></span></p>
         </div>
 
         <ul class="nav-links">
-            <li><a href="#" class="active" onclick="showSection('fee-payment')">Fee Payment</a></li>
-            <li><a href="#" onclick="showSection('queue-status')">Queue Status</a></li>
-            <li><a href="student/profile.php">Update Profile</a></li>
-            <li><a href="logout.php">Logout</a></li>
+            <li><a href="#" class="active" onclick="showSection('fee-payment')"><i class="fas fa-credit-card"></i> Fee
+                    Payment</a></li>
+            <li><a href="#" onclick="showSection('queue-status')"><i class="fas fa-clock"></i> Queue Status</a></li>
+            <li><a href="student/profile.php"><i class="fas fa-user-edit"></i> Update Profile</a></li>
+            <li><a href="student/change_password.php"><i class="fas fa-key"></i> Change Password</a></li>
+            <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </div>
 
@@ -285,48 +594,52 @@ $fee_summary = get_fee_summary($conn, $student_id);
     <div class="main-content">
         <div class="header">
             <h1>Student Dashboard</h1>
-            <p>Welcome back, <?php echo $student['full_name']; ?>!</p>
+            <p>Welcome back, <?php echo $student['full_name']; ?>! Ready to manage your fees?</p>
         </div>
 
         <!-- Fee Summary -->
         <div class="fee-summary">
-            <h2>Your Fee Summary</h2>
-            <table class="fee-table">
-                <thead>
-                    <tr>
-                        <th>Fee Type</th>
-                        <th>Total Amount</th>
-                        <th>Paid Amount</th>
-                        <th>Remaining Balance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($fee_summary as $fee): ?>
+            <h2><i class="fas fa-chart-bar"></i> Your Fee Summary</h2>
+            <div class="table-container">
+                <table class="fee-table">
+                    <thead>
                         <tr>
-                            <td><?php echo $fee['name']; ?></td>
-                            <td>₹<?php echo number_format($fee['total_amount'], 2); ?></td>
-                            <td class="amount-paid">₹<?php echo number_format($fee['paid_amount'], 2); ?></td>
-                            <td class="amount-remaining">₹<?php echo number_format($fee['remaining_amount'], 2); ?></td>
+                            <th>Fee Type</th>
+                            <th>Total Amount</th>
+                            <th>Paid Amount</th>
+                            <th>Remaining Balance</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($fee_summary as $fee): ?>
+                            <tr>
+                                <td><?php echo $fee['name']; ?></td>
+                                <td>₹<?php echo number_format($fee['total_amount'], 2); ?></td>
+                                <td class="amount-paid">₹<?php echo number_format($fee['paid_amount'], 2); ?></td>
+                                <td class="amount-remaining">₹<?php echo number_format($fee['remaining_amount'], 2); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Fee Payment Section -->
         <div id="fee-payment" class="section">
             <div class="counters-section">
-                <h2>Select Counter for Payment</h2>
+                <h2><i class="fas fa-desktop"></i> Select Counter for Payment</h2>
                 <div class="counters-grid" id="counters-grid">
                     <!-- Counters will be loaded via JavaScript -->
                 </div>
 
                 <div id="fee-form-container">
-                    <h3>Select Fees to Pay</h3>
+                    <h3 style="color: #2c3e50; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-money-check"></i> Select Fees to Pay
+                    </h3>
                     <div id="fee-selection"></div>
-                    <button onclick="joinQueue()"
-                        style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px;">Join
-                        Queue</button>
+                    <button onclick="joinQueue()" class="btn btn-success" style="margin-top: 20px;">
+                        <i class="fas fa-sign-in-alt"></i> Join Queue
+                    </button>
                 </div>
             </div>
         </div>
@@ -334,15 +647,43 @@ $fee_summary = get_fee_summary($conn, $student_id);
         <!-- Queue Status Section -->
         <div id="queue-status" class="section" style="display: none;">
             <div class="queue-status" id="queue-status-display">
-                <h2>Your Queue Status</h2>
-                <div class="loader"></div>
-                <p id="queue-position">Loading your position...</p>
-                <p id="queue-wait-time">Calculating wait time...</p>
-                <button onclick="leaveQueue()"
-                    style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px;">Leave
-                    Queue</button>
-                <button onclick="refreshQueueStatus()"
-                    style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px; margin-left: 10px;">Refresh</button>
+                <h2
+                    style="color: #2c3e50; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <i class="fas fa-clock"></i> Your Queue Status
+                </h2>
+                <p style="color: #5a6c7d; margin-bottom: 20px;">Real-time updates on your position</p>
+
+                <!-- Queue Animation -->
+                <div class="queue-animation">
+                    <div class="queue-line" id="queue-line">
+                        <!-- Walking people will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Queue Information -->
+                <div class="queue-info">
+                    <h3><i class="fas fa-user-clock"></i> Current Position</h3>
+                    <div class="position-number" id="queue-position">--</div>
+                    <div class="wait-time" id="queue-wait-time">Calculating wait time...</div>
+                    <div style="margin-top: 15px; font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i> Average processing time: 2-3 minutes per student
+                    </div>
+                </div>
+
+                <!-- Queue Actions -->
+                <div class="queue-actions">
+                    <button onclick="refreshQueueStatus()" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> Refresh Status
+                    </button>
+                    <button onclick="leaveQueue()" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i> Leave Queue
+                    </button>
+                </div>
+
+                <!-- Last Updated -->
+                <div style="margin-top: 20px; color: #5a6c7d; font-size: 0.9rem;">
+                    <i class="fas fa-clock"></i> Last updated: <span id="last-updated">Just now</span>
+                </div>
             </div>
         </div>
     </div>
@@ -389,7 +730,7 @@ $fee_summary = get_fee_summary($conn, $student_id);
                     countersGrid.innerHTML = '';
 
                     if (data.length === 0) {
-                        countersGrid.innerHTML = '<p>No counters available at the moment.</p>';
+                        countersGrid.innerHTML = '<p style="text-align: center; color: #5a6c7d; padding: 40px;">No counters available at the moment. Please check back later.</p>';
                         return;
                     }
 
@@ -397,18 +738,21 @@ $fee_summary = get_fee_summary($conn, $student_id);
                         const counterCard = document.createElement('div');
                         counterCard.className = 'counter-card';
                         counterCard.innerHTML = `
-                        <h3>${counter.name}</h3>
-                        <p><strong>Location:</strong> ${counter.location}</p>
-                        <p><strong>Accepts:</strong> ${counter.fee_types || 'No fees assigned'}</p>
-                        <p><strong>Status:</strong> <span style="color: #28a745;">Active</span></p>
-                    `;
+                            <h3><i class="fas fa-desktop"></i> ${counter.name}</h3>
+                            <p><i class="fas fa-map-marker-alt"></i> <strong>Location:</strong> ${counter.location}</p>
+                            <p><i class="fas fa-money-bill-wave"></i> <strong>Accepts:</strong> ${counter.fee_types || 'No fees assigned'}</p>
+                            <p><i class="fas fa-circle"></i> <strong>Status:</strong> <span style="color: #28a745;">Active</span></p>
+                            <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                                <small style="color: #5a6c7d;">Click to select this counter</small>
+                            </div>
+                        `;
                         counterCard.onclick = () => selectCounter(counter.id);
                         countersGrid.appendChild(counterCard);
                     });
                 })
                 .catch(error => {
                     console.error('Error loading counters:', error);
-                    document.getElementById('counters-grid').innerHTML = '<p class="error">Error loading counters. Please refresh the page.</p>';
+                    document.getElementById('counters-grid').innerHTML = '<p style="text-align: center; color: #dc3545; padding: 20px;"><i class="fas fa-exclamation-triangle"></i> Error loading counters. Please refresh the page.</p>';
                 });
         }
 
@@ -445,19 +789,23 @@ $fee_summary = get_fee_summary($conn, $student_id);
                 counterData.feeTypes.forEach(fee => {
                     if (fee.remaining_amount > 0) {
                         html += `
-                    <div class="fee-option">
-                        <input type="checkbox" name="fee_types[]" value="${fee.fee_type_id}" 
-                               onchange="toggleAmountInput(${fee.fee_type_id}, ${fee.remaining_amount})">
-                        <label>${fee.fee_name} (Remaining: ₹${fee.remaining_amount})</label>
-                        <input type="number" id="amount_${fee.fee_type_id}" name="amounts[${fee.fee_type_id}]" 
-                               placeholder="Enter amount" min="1" max="${fee.remaining_amount}" 
-                               class="amount-input" style="display:none;">
-                    </div>`;
+                            <div class="fee-option">
+                                <input type="checkbox" name="fee_types[]" value="${fee.fee_type_id}" 
+                                       onchange="toggleAmountInput(${fee.fee_type_id}, ${fee.remaining_amount})"
+                                       style="margin-right: 10px;">
+                                <label style="font-weight: 600; color: #2c3e50;">${fee.fee_name}</label>
+                                <div style="color: #5a6c7d; margin: 5px 0 0 25px;">
+                                    Remaining Balance: <strong style="color: #dc3545;">₹${fee.remaining_amount}</strong>
+                                </div>
+                                <input type="number" id="amount_${fee.fee_type_id}" name="amounts[${fee.fee_type_id}]" 
+                                       placeholder="Enter amount to pay" min="1" max="${fee.remaining_amount}" 
+                                       class="amount-input" style="display:none;">
+                            </div>`;
                     }
                 });
             }
 
-            feeSelection.innerHTML = html || '<p>No pending fees for this counter.</p>';
+            feeSelection.innerHTML = html || '<p style="text-align: center; color: #5a6c7d; padding: 20px;">No pending fees available for this counter.</p>';
         }
 
         function toggleAmountInput(feeTypeId, maxAmount) {
@@ -511,9 +859,9 @@ $fee_summary = get_fee_summary($conn, $student_id);
 
             // Show loading state
             const joinBtn = document.querySelector('button[onclick="joinQueue()"]');
-            const originalText = joinBtn.textContent;
+            const originalText = joinBtn.innerHTML;
             joinBtn.disabled = true;
-            joinBtn.textContent = 'Joining Queue...';
+            joinBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Joining Queue...';
 
             fetch('ajax/join_queue.php', {
                 method: 'POST',
@@ -539,7 +887,7 @@ $fee_summary = get_fee_summary($conn, $student_id);
                 })
                 .finally(() => {
                     joinBtn.disabled = false;
-                    joinBtn.textContent = originalText;
+                    joinBtn.innerHTML = originalText;
                 });
         }
 
@@ -568,9 +916,9 @@ $fee_summary = get_fee_summary($conn, $student_id);
                 clearInterval(queueInterval);
             }
 
-            // Update immediately and then every 5 seconds
+            // Update immediately and then every 3 seconds
             refreshQueueStatus();
-            queueInterval = setInterval(refreshQueueStatus, 5000);
+            queueInterval = setInterval(refreshQueueStatus, 3000);
         }
 
         function refreshQueueStatus() {
@@ -583,27 +931,66 @@ $fee_summary = get_fee_summary($conn, $student_id);
                 })
                 .then(data => {
                     if (data.error) {
-                        document.getElementById('queue-position').textContent = 'Not in queue';
-                        document.getElementById('queue-wait-time').textContent = '';
+                        document.getElementById('queue-position').textContent = '--';
+                        document.getElementById('queue-wait-time').textContent = 'Not in queue';
                         // Stop updating if not in queue
                         if (queueInterval) {
                             clearInterval(queueInterval);
                             queueInterval = null;
                         }
                     } else {
-                        document.getElementById('queue-position').textContent = `Your position: ${data.position} of ${data.total_in_queue}`;
-                        document.getElementById('queue-wait-time').textContent = `Estimated wait time: ${data.wait_time} minutes`;
+                        document.getElementById('queue-position').textContent = data.position;
+                        document.getElementById('queue-wait-time').textContent = `Estimated wait: ${data.wait_time} minutes`;
+                        updateQueueAnimation(data.position, data.total_in_queue);
+                        document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
                     }
                 })
                 .catch(error => {
                     console.error('Error refreshing queue status:', error);
-                    document.getElementById('queue-position').textContent = 'Error loading queue status';
-                    document.getElementById('queue-wait-time').textContent = '';
+                    document.getElementById('queue-position').textContent = '--';
+                    document.getElementById('queue-wait-time').textContent = 'Error loading status';
                 });
         }
 
+        function updateQueueAnimation(position, totalInQueue) {
+            const queueLine = document.getElementById('queue-line');
+            queueLine.innerHTML = '';
+
+            // Create walking people animation
+            const totalPeople = Math.min(totalInQueue, 10); // Show max 10 people
+            const currentUserIndex = position - 1;
+
+            for (let i = 0; i < totalPeople; i++) {
+                const person = document.createElement('div');
+                const isCurrentUser = i === currentUserIndex;
+                const isMale = Math.random() > 0.5;
+
+                person.className = `walking-person ${isCurrentUser ? 'current-user' : isMale ? 'person-male' : 'person-female'}`;
+                person.style.left = `${(i / (totalPeople - 1)) * 90}%`;
+                person.style.animationDelay = `${i * 0.2}s`;
+
+                if (isCurrentUser) {
+                    person.innerHTML = '<i class="fas fa-user" title="You"></i>';
+                } else {
+                    person.innerHTML = isMale ? '<i class="fas fa-male"></i>' : '<i class="fas fa-female"></i>';
+                }
+
+                queueLine.appendChild(person);
+            }
+
+            // Add counter at the end
+            const counter = document.createElement('div');
+            counter.style.position = 'absolute';
+            counter.style.right = '20px';
+            counter.style.bottom = '10px';
+            counter.style.fontSize = '2rem';
+            counter.style.color = '#28a745';
+            counter.innerHTML = '<i class="fas fa-desktop" title="Counter"></i>';
+            queueLine.appendChild(counter);
+        }
+
         function leaveQueue() {
-            if (confirm('Are you sure you want to leave the queue?')) {
+            if (confirm('Are you sure you want to leave the queue? Your position will be lost.')) {
                 fetch('ajax/leave_queue.php', { method: 'POST' })
                     .then(response => {
                         if (!response.ok) {
@@ -622,6 +1009,7 @@ $fee_summary = get_fee_summary($conn, $student_id);
                             loadCounters();
                             // Hide fee form
                             document.getElementById('fee-form-container').style.display = 'none';
+                            alert('You have left the queue successfully.');
                         } else {
                             alert('Failed to leave queue. Please try again.');
                         }
