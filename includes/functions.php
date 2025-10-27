@@ -341,4 +341,56 @@ if (!function_exists('validate_accountant_login')) {
         return false;
     }
 }
+// Add this function to includes/functions.php
+if (!function_exists('assign_fee_to_students')) {
+    function assign_fee_to_students($conn, $fee_type_id, $academic_year, $total_amount)
+    {
+        try {
+            // Build query based on academic year selection
+            if ($academic_year == 'All') {
+                // Assign to all students regardless of academic year
+                $sql = "SELECT id FROM students WHERE email_verified = 1";
+                $stmt = $conn->prepare($sql);
+                $stmt->execute();
+            } else {
+                // Assign only to students of specific academic year
+                $sql = "SELECT id FROM students WHERE academic_year = ? AND email_verified = 1";
+                $stmt = $conn->prepare($sql);
+                $stmt->execute([$academic_year]);
+            }
+
+            $students = $stmt->fetchAll();
+            $assigned_count = 0;
+
+            foreach ($students as $student) {
+                // Check if fee already assigned to this student
+                $check_sql = "SELECT id FROM student_fees WHERE student_id = ? AND fee_type_id = ?";
+                $check_stmt = $conn->prepare($check_sql);
+                $check_stmt->execute([$student['id'], $fee_type_id]);
+
+                if ($check_stmt->rowCount() == 0) {
+                    // Get student's academic year for the assignment
+                    $student_year_sql = "SELECT academic_year FROM students WHERE id = ?";
+                    $student_year_stmt = $conn->prepare($student_year_sql);
+                    $student_year_stmt->execute([$student['id']]);
+                    $student_data = $student_year_stmt->fetch();
+
+                    $student_academic_year = $student_data['academic_year'];
+
+                    // Assign fee to student
+                    $insert_sql = "INSERT INTO student_fees (student_id, fee_type_id, total_amount, paid_amount, remaining_amount, academic_year) 
+                                  VALUES (?, ?, ?, 0, ?, ?)";
+                    $insert_stmt = $conn->prepare($insert_sql);
+                    $insert_stmt->execute([$student['id'], $fee_type_id, $total_amount, $total_amount, $student_academic_year]);
+                    $assigned_count++;
+                }
+            }
+
+            return $assigned_count;
+        } catch (PDOException $e) {
+            error_log("Error assigning fee to students: " . $e->getMessage());
+            return 0;
+        }
+    }
+}
 ?>

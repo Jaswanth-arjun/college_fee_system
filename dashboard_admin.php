@@ -56,6 +56,8 @@ if (isset($_POST['ajax'])) {
 }
 
 // Fee Management Functions
+// Fee Management Functions
+// Fee Management Functions
 function add_fee_type($conn)
 {
     try {
@@ -67,13 +69,118 @@ function add_fee_type($conn)
         $stmt = $conn->prepare($sql);
 
         if ($stmt->execute([$fee_name, $academic_year, $total_amount])) {
-            return ['success' => true, 'message' => 'Fee type added successfully'];
+            $fee_type_id = $conn->lastInsertId();
+
+            // Automatically assign this fee to students based on academic year selection
+            $assigned_count = assign_fee_to_students($conn, $fee_type_id, $academic_year, $total_amount);
+
+            $year_message = ($academic_year == 'All') ? 'all years' : 'Year ' . $academic_year;
+            return ['success' => true, 'message' => 'Fee type added successfully and assigned to ' . $assigned_count . ' students of ' . $year_message];
         }
         return ['success' => false, 'message' => 'Failed to add fee type'];
     } catch (PDOException $e) {
         return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
     }
 }
+
+function update_fee_type($conn)
+{
+    try {
+        $id = $_POST['id'];
+        $fee_name = $_POST['fee_name'];
+        $academic_year = $_POST['academic_year'];
+        $total_amount = $_POST['total_amount'];
+
+        // Get current fee details to check if academic year changed
+        $current_sql = "SELECT academic_year, total_amount FROM fee_types WHERE id = ?";
+        $current_stmt = $conn->prepare($current_sql);
+        $current_stmt->execute([$id]);
+        $current_fee = $current_stmt->fetch();
+
+        $sql = "UPDATE fee_types SET name = ?, academic_year = ?, total_amount = ? WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+
+        if ($stmt->execute([$fee_name, $academic_year, $total_amount, $id])) {
+            // If academic year changed, reassign fees to students
+            if ($current_fee['academic_year'] != $academic_year) {
+                // Remove existing assignments for this fee
+                $delete_sql = "DELETE FROM student_fees WHERE fee_type_id = ?";
+                $delete_stmt = $conn->prepare($delete_sql);
+                $delete_stmt->execute([$id]);
+
+                // Assign to students of new academic year
+                $assigned_count = assign_fee_to_students($conn, $id, $academic_year, $total_amount);
+
+                $year_message = ($academic_year == 'All') ? 'all years' : 'Year ' . $academic_year;
+                return ['success' => true, 'message' => 'Fee type updated successfully and reassigned to ' . $assigned_count . ' students of ' . $year_message];
+            } else if ($current_fee['total_amount'] != $total_amount) {
+                // If only amount changed, update existing assignments
+                $update_amount_sql = "UPDATE student_fees SET total_amount = ?, remaining_amount = ? - paid_amount WHERE fee_type_id = ?";
+                $update_amount_stmt = $conn->prepare($update_amount_sql);
+                $update_amount_stmt->execute([$total_amount, $total_amount, $id]);
+
+                return ['success' => true, 'message' => 'Fee type updated successfully (amount updated for all assigned students)'];
+            }
+
+            return ['success' => true, 'message' => 'Fee type updated successfully'];
+        }
+        return ['success' => false, 'message' => 'Failed to update fee type'];
+    } catch (PDOException $e) {
+        return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
+    }
+}
+
+// Updated function to assign fee to students (handles "All Years")
+function assign_fee_to_students($conn, $fee_type_id, $academic_year, $total_amount)
+{
+    try {
+        // Build query based on academic year selection
+        if ($academic_year == 'All') {
+            // Assign to all students regardless of academic year
+            $sql = "SELECT id FROM students WHERE email_verified = 1";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute();
+        } else {
+            // Assign only to students of specific academic year
+            $sql = "SELECT id FROM students WHERE academic_year = ? AND email_verified = 1";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([$academic_year]);
+        }
+
+        $students = $stmt->fetchAll();
+        $assigned_count = 0;
+
+        foreach ($students as $student) {
+            // Check if fee already assigned to this student
+            $check_sql = "SELECT id FROM student_fees WHERE student_id = ? AND fee_type_id = ?";
+            $check_stmt = $conn->prepare($check_sql);
+            $check_stmt->execute([$student['id'], $fee_type_id]);
+
+            if ($check_stmt->rowCount() == 0) {
+                // Get student's academic year for the assignment
+                $student_year_sql = "SELECT academic_year FROM students WHERE id = ?";
+                $student_year_stmt = $conn->prepare($student_year_sql);
+                $student_year_stmt->execute([$student['id']]);
+                $student_data = $student_year_stmt->fetch();
+
+                $student_academic_year = $student_data['academic_year'];
+
+                // Assign fee to student
+                $insert_sql = "INSERT INTO student_fees (student_id, fee_type_id, total_amount, paid_amount, remaining_amount, academic_year) 
+                              VALUES (?, ?, ?, 0, ?, ?)";
+                $insert_stmt = $conn->prepare($insert_sql);
+                $insert_stmt->execute([$student['id'], $fee_type_id, $total_amount, $total_amount, $student_academic_year]);
+                $assigned_count++;
+            }
+        }
+
+        return $assigned_count;
+    } catch (PDOException $e) {
+        error_log("Error assigning fee to students: " . $e->getMessage());
+        return 0;
+    }
+}
+// New function to assign fee to students of specific academic year
 
 function get_fee_types($conn)
 {
@@ -89,25 +196,6 @@ function get_fee_types($conn)
     }
 }
 
-function update_fee_type($conn)
-{
-    try {
-        $id = $_POST['id'];
-        $fee_name = $_POST['fee_name'];
-        $academic_year = $_POST['academic_year'];
-        $total_amount = $_POST['total_amount'];
-
-        $sql = "UPDATE fee_types SET name = ?, academic_year = ?, total_amount = ? WHERE id = ?";
-        $stmt = $conn->prepare($sql);
-
-        if ($stmt->execute([$fee_name, $academic_year, $total_amount, $id])) {
-            return ['success' => true, 'message' => 'Fee type updated successfully'];
-        }
-        return ['success' => false, 'message' => 'Failed to update fee type'];
-    } catch (PDOException $e) {
-        return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
-    }
-}
 
 function delete_fee_type($conn)
 {
@@ -124,7 +212,33 @@ function delete_fee_type($conn)
             return ['success' => false, 'message' => 'Cannot delete fee type. It is being used in transactions.'];
         }
 
-        // Delete fee type
+        // Check if fee type is assigned to any counters
+        $sql = "SELECT COUNT(*) as count FROM counter_fee_types WHERE fee_type_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$id]);
+        $result = $stmt->fetch();
+
+        if ($result['count'] > 0) {
+            // Remove from counter assignments first
+            $sql = "DELETE FROM counter_fee_types WHERE fee_type_id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([$id]);
+        }
+
+        // Check if fee type is assigned to any students
+        $sql = "SELECT COUNT(*) as count FROM student_fees WHERE fee_type_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$id]);
+        $result = $stmt->fetch();
+
+        if ($result['count'] > 0) {
+            // Remove from student assignments first
+            $sql = "DELETE FROM student_fees WHERE fee_type_id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([$id]);
+        }
+
+        // Now delete the fee type
         $sql = "DELETE FROM fee_types WHERE id = ?";
         $stmt = $conn->prepare($sql);
 
@@ -1265,9 +1379,10 @@ $pending_queue = get_pending_queue_count($conn);
                                     placeholder="e.g., Exam Fee, Hostel Fee" required>
                             </div>
                             <div class="form-group">
-                                <label for="academic_year">Academic Year</label>
-                                <select id="academic_year" name="academic_year" required>
+                                <label for="edit_academic_year">Academic Year</label>
+                                <select id="edit_academic_year" name="academic_year" required>
                                     <option value="">Select Year</option>
+                                    <option value="All">All Years</option>
                                     <option value="1">First Year</option>
                                     <option value="2">Second Year</option>
                                     <option value="3">Third Year</option>
