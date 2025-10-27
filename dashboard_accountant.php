@@ -176,6 +176,9 @@ $queue = get_current_queue($conn, $counter_id);
             padding: 20px;
             backdrop-filter: blur(15px);
             border-right: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
 
         .queue-stats {
@@ -231,6 +234,9 @@ $queue = get_current_queue($conn, $counter_id);
         .queue-list {
             max-height: 500px;
             overflow-y: auto;
+            flex: 1;
+            margin-bottom: 80px;
+            /* Space for logout button */
         }
 
         .queue-item {
@@ -297,6 +303,39 @@ $queue = get_current_queue($conn, $counter_id);
             border-radius: 10px;
             font-size: 12px;
             backdrop-filter: blur(5px);
+        }
+
+        /* Logout Button */
+        .logout-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 12px 20px;
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 10px;
+            color: #ff6b6b;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            background: rgba(97, 240, 100, 0.3);
+            border-color: #4bfa4bff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(63, 246, 109, 0.2);
         }
 
         /* Main Content */
@@ -596,6 +635,14 @@ $queue = get_current_queue($conn, $counter_id);
                 width: 100%;
                 justify-content: center;
             }
+
+            .logout-container {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                right: auto;
+                margin-top: 20px;
+            }
         }
     </style>
 </head>
@@ -667,6 +714,14 @@ $queue = get_current_queue($conn, $counter_id);
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
+            </div>
+
+            <!-- Logout Button -->
+            <div class="logout-container">
+                <a href="logout.php" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
             </div>
         </div>
 

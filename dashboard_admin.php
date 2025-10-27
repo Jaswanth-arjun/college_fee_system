@@ -22,6 +22,9 @@ if (isset($_POST['ajax'])) {
             case 'update_fee_type':
                 echo json_encode(update_fee_type($conn));
                 break;
+            case 'delete_fee_type':
+                echo json_encode(delete_fee_type($conn));
+                break;
             case 'add_counter':
                 echo json_encode(add_counter($conn));
                 break;
@@ -93,15 +96,42 @@ function update_fee_type($conn)
         $fee_name = $_POST['fee_name'];
         $academic_year = $_POST['academic_year'];
         $total_amount = $_POST['total_amount'];
-        $status = $_POST['status'];
 
-        $sql = "UPDATE fee_types SET name = ?, academic_year = ?, total_amount = ?, is_active = ? WHERE id = ?";
+        $sql = "UPDATE fee_types SET name = ?, academic_year = ?, total_amount = ? WHERE id = ?";
         $stmt = $conn->prepare($sql);
 
-        if ($stmt->execute([$fee_name, $academic_year, $total_amount, $status, $id])) {
+        if ($stmt->execute([$fee_name, $academic_year, $total_amount, $id])) {
             return ['success' => true, 'message' => 'Fee type updated successfully'];
         }
         return ['success' => false, 'message' => 'Failed to update fee type'];
+    } catch (PDOException $e) {
+        return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
+    }
+}
+
+function delete_fee_type($conn)
+{
+    try {
+        $id = $_POST['id'];
+
+        // Check if fee type is being used in any transactions
+        $sql = "SELECT COUNT(*) as count FROM transactions WHERE fee_type_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$id]);
+        $result = $stmt->fetch();
+
+        if ($result['count'] > 0) {
+            return ['success' => false, 'message' => 'Cannot delete fee type. It is being used in transactions.'];
+        }
+
+        // Delete fee type
+        $sql = "DELETE FROM fee_types WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+
+        if ($stmt->execute([$id])) {
+            return ['success' => true, 'message' => 'Fee type deleted successfully'];
+        }
+        return ['success' => false, 'message' => 'Failed to delete fee type'];
     } catch (PDOException $e) {
         return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
     }
@@ -1273,7 +1303,6 @@ $pending_queue = get_pending_queue_count($conn);
                                     <th>Fee Name</th>
                                     <th>Academic Year</th>
                                     <th>Total Amount</th>
-                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -1500,6 +1529,49 @@ $pending_queue = get_pending_queue_count($conn);
         </div>
     </div>
 
+    <!-- Edit Fee Type Modal -->
+    <div id="editFeeTypeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Fee Type</h3>
+                <span class="close" onclick="closeModal('editFeeTypeModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editFeeTypeForm">
+                    <input type="hidden" id="edit_fee_id" name="id">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit_fee_name">Fee Name</label>
+                            <input type="text" id="edit_fee_name" name="fee_name"
+                                placeholder="e.g., Exam Fee, Hostel Fee" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit_academic_year">Academic Year</label>
+                            <select id="edit_academic_year" name="academic_year" required>
+                                <option value="">Select Year</option>
+                                <option value="1">First Year</option>
+                                <option value="2">Second Year</option>
+                                <option value="3">Third Year</option>
+                                <option value="4">Fourth Year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit_total_amount">Total Amount (₹)</label>
+                            <input type="number" id="edit_total_amount" name="total_amount" step="0.01"
+                                placeholder="0.00" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('editFeeTypeModal')">Cancel</button>
+                <button type="submit" form="editFeeTypeForm" class="btn btn-primary">Update Fee Type</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let selectedCounterId = null;
         let queueInterval = null;
@@ -1590,7 +1662,7 @@ $pending_queue = get_pending_queue_count($conn);
                     tbody.innerHTML = '';
 
                     if (data.error) {
-                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ff6b6b;">Error loading fee types</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ff6b6b;">Error loading fee types</td></tr>';
                         return;
                     }
 
@@ -1601,9 +1673,8 @@ $pending_queue = get_pending_queue_count($conn);
                         <td>${fee.fee_name}</td>
                         <td>Year ${fee.academic_year}</td>
                         <td>₹${parseFloat(fee.total_amount).toFixed(2)}</td>
-                        <td><span class="badge ${fee.status === 'Active' ? 'badge-success' : 'badge-danger'}">${fee.status}</span></td>
                         <td>
-                            <button class="btn btn-primary btn-sm" onclick="editFeeType(${fee.id})">Edit</button>
+                            <button class="btn btn-primary btn-sm" onclick="editFeeType(${fee.id}, '${fee.fee_name}', ${fee.academic_year}, ${fee.total_amount})">Edit</button>
                             <button class="btn btn-danger btn-sm" onclick="deleteFeeType(${fee.id})">Delete</button>
                         </td>
                     `;
@@ -1613,17 +1684,68 @@ $pending_queue = get_pending_queue_count($conn);
                 .catch(error => {
                     console.error('Error loading fee types:', error);
                     const tbody = document.querySelector('#feeTypesTable tbody');
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ff6b6b;">Error loading fee types</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ff6b6b;">Error loading fee types</td></tr>';
                 });
         }
 
-        function editFeeType(id) {
-            alert('Edit functionality for fee type ' + id + ' will be implemented here.');
+        function editFeeType(id, name, academicYear, totalAmount) {
+            document.getElementById('edit_fee_id').value = id;
+            document.getElementById('edit_fee_name').value = name;
+            document.getElementById('edit_academic_year').value = academicYear;
+            document.getElementById('edit_total_amount').value = totalAmount;
+            document.getElementById('editFeeTypeModal').style.display = 'block';
         }
+
+        document.getElementById('editFeeTypeForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('ajax', true);
+            formData.append('action', 'update_fee_type');
+
+            fetch('', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Fee type updated successfully!');
+                        closeModal('editFeeTypeModal');
+                        loadFeeTypes();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating fee type. Please try again.');
+                });
+        });
 
         function deleteFeeType(id) {
             if (confirm('Are you sure you want to delete this fee type?')) {
-                alert('Delete functionality for fee type ' + id + ' will be implemented here.');
+                const formData = new FormData();
+                formData.append('ajax', true);
+                formData.append('action', 'delete_fee_type');
+                formData.append('id', id);
+
+                fetch('', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Fee type deleted successfully!');
+                            loadFeeTypes();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error deleting fee type. Please try again.');
+                    });
             }
         }
 
