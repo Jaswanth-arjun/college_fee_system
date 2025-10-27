@@ -82,46 +82,147 @@ if (!$student) {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
             min-height: 100vh;
+            display: flex;
+            background:
+                radial-gradient(circle at 10% 20%, rgba(168, 255, 120, 0.3) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 154, 158, 0.3) 0%, transparent 20%),
+                linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Black corner overlays */
+        .corner-overlay {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .corner-top-left {
+            top: -200px;
+            left: -200px;
+            background: radial-gradient(circle, #000000 0%, transparent 70%);
+        }
+
+        .corner-bottom-right {
+            bottom: -200px;
+            right: -200px;
+            background: radial-gradient(circle, #000000 0%, transparent 70%);
+        }
+
+        /* Floating elements for visual interest */
+        .floating {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            animation: float 6s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        .floating:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+            background: rgba(168, 255, 120, 0.2);
+        }
+
+        .floating:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            left: 80%;
+            animation-delay: 2s;
+            background: rgba(255, 154, 158, 0.2);
+        }
+
+        .floating:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 20%;
+            left: 85%;
+            animation-delay: 4s;
+            background: rgba(120, 255, 214, 0.2);
+        }
+
+        .floating:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 80%;
+            left: 15%;
+            animation-delay: 1s;
+            background: rgba(250, 208, 196, 0.2);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
         }
 
         /* Sidebar */
         .sidebar {
             width: 320px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             height: 100vh;
             padding: 25px;
             position: fixed;
             box-shadow: 5px 0 25px rgba(0, 0, 0, 0.1);
             border-right: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1;
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
         }
 
         .profile {
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .profile-img {
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, #a8ff78, #78ffd6);
             margin: 0 auto 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 48px;
-            color: white;
-            border: 4px solid white;
+            color: #333;
+            border: 4px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
@@ -130,20 +231,32 @@ if (!$student) {
             height: 100%;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid white;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .profile h3 {
+            color: white;
+            margin-bottom: 5px;
+            font-size: 1.4rem;
+        }
+
+        .profile p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
         }
 
         .student-info {
             margin-bottom: 25px;
             padding: 20px;
-            background: #f8f9fa;
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #a8ff78;
+            backdrop-filter: blur(5px);
         }
 
         .student-info h3 {
             margin-bottom: 15px;
-            color: #2c3e50;
+            color: white;
             font-size: 1.2rem;
             display: flex;
             align-items: center;
@@ -151,18 +264,18 @@ if (!$student) {
         }
 
         .student-info h3 i {
-            color: #667eea;
+            color: #a8ff78;
         }
 
         .student-info p {
             margin: 8px 0;
-            color: #5a6c7d;
+            color: rgba(255, 255, 255, 0.9);
             display: flex;
             justify-content: space-between;
         }
 
         .student-info p strong {
-            color: #2c3e50;
+            color: white;
         }
 
         /* Navigation */
@@ -175,7 +288,7 @@ if (!$student) {
         }
 
         .nav-links a {
-            color: #5a6c7d;
+            color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
             padding: 15px;
             display: flex;
@@ -184,14 +297,15 @@ if (!$student) {
             border-radius: 10px;
             transition: all 0.3s ease;
             font-weight: 500;
+            backdrop-filter: blur(5px);
         }
 
         .nav-links a:hover,
         .nav-links a.active {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
+            background: linear-gradient(45deg, #a8ff78, #78ffd6);
+            color: #333;
             transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 15px rgba(168, 255, 120, 0.3);
         }
 
         .nav-links a i {
@@ -205,46 +319,49 @@ if (!$student) {
             padding: 30px;
             width: calc(100% - 320px);
             min-height: 100vh;
+            position: relative;
+            z-index: 1;
         }
 
         .header {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
             padding: 25px;
             border-radius: 15px;
             margin-bottom: 25px;
             box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .header h1 {
-            color: #2c3e50;
+            color: white;
             font-size: 2.2rem;
             margin-bottom: 8px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
         }
 
         .header p {
-            color: #5a6c7d;
+            color: rgba(255, 255, 255, 0.9);
             font-size: 1.1rem;
         }
 
         /* Fee Summary */
         .fee-summary {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
             padding: 25px;
             border-radius: 15px;
             margin-bottom: 25px;
             box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .fee-summary h2 {
             margin-bottom: 20px;
-            color: #2c3e50;
+            color: white;
             font-size: 1.5rem;
             display: flex;
             align-items: center;
@@ -252,7 +369,7 @@ if (!$student) {
         }
 
         .fee-summary h2 i {
-            color: #667eea;
+            color: #a8ff78;
         }
 
         .fee-table {
@@ -265,42 +382,44 @@ if (!$student) {
         .fee-table td {
             padding: 15px;
             text-align: left;
-            border-bottom: 1px solid #eaeaea;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
         }
 
         .fee-table th {
-            background: #f8f9fa;
-            color: #2c3e50;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
             font-weight: 600;
+            backdrop-filter: blur(5px);
         }
 
         .fee-table tr:hover {
-            background: #f8f9fa;
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .amount-paid {
-            color: #28a745;
+            color: #a8ff78;
             font-weight: 600;
         }
 
         .amount-remaining {
-            color: #dc3545;
+            color: #ff6b6b;
             font-weight: 600;
         }
 
         /* Counters Grid */
         .counters-section {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
             padding: 25px;
             border-radius: 15px;
             box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .counters-section h2 {
             margin-bottom: 25px;
-            color: #2c3e50;
+            color: white;
             font-size: 1.5rem;
             display: flex;
             align-items: center;
@@ -308,7 +427,7 @@ if (!$student) {
         }
 
         .counters-section h2 i {
-            color: #667eea;
+            color: #a8ff78;
         }
 
         .counters-grid {
@@ -318,14 +437,15 @@ if (!$student) {
         }
 
         .counter-card {
-            background: white;
-            border: 2px solid #eaeaea;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             padding: 25px;
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(10px);
         }
 
         .counter-card::before {
@@ -335,31 +455,32 @@ if (!$student) {
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
         }
 
         .counter-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            border-color: #667eea;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-color: #a8ff78;
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .counter-card h3 {
-            color: #2c3e50;
+            color: white;
             margin-bottom: 12px;
             font-size: 1.3rem;
         }
 
         .counter-card p {
             margin: 8px 0;
-            color: #5a6c7d;
+            color: rgba(255, 255, 255, 0.9);
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
         .counter-card p i {
-            color: #667eea;
+            color: #a8ff78;
             width: 16px;
         }
 
@@ -373,13 +494,15 @@ if (!$student) {
         }
 
         .status-active {
-            background: #d4edda;
-            color: #155724;
+            background: rgba(168, 255, 120, 0.2);
+            color: #a8ff78;
+            border: 1px solid #a8ff78;
         }
 
         .status-inactive {
-            background: #f8d7da;
-            color: #721c24;
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
         }
 
         /* Fee Form */
@@ -387,49 +510,58 @@ if (!$student) {
             display: none;
             margin-top: 25px;
             padding: 25px;
-            background: #f8f9fa;
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            border: 2px dashed #667eea;
+            border: 2px dashed #a8ff78;
+            backdrop-filter: blur(10px);
         }
 
         .fee-option {
             margin: 15px 0;
             padding: 15px;
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 8px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #a8ff78;
             transition: all 0.3s ease;
+            color: white;
         }
 
         .fee-option:hover {
             transform: translateX(5px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .amount-input {
             margin-top: 10px;
             padding: 10px;
             width: 200px;
-            border: 2px solid #eaeaea;
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             font-size: 14px;
             transition: border-color 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .amount-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
         }
 
         .amount-input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #a8ff78;
+            box-shadow: 0 0 0 3px rgba(168, 255, 120, 0.2);
         }
 
         /* Queue Status */
         .queue-status {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
             padding: 30px;
             border-radius: 20px;
             margin-top: 25px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             text-align: center;
         }
@@ -437,11 +569,12 @@ if (!$student) {
         .queue-animation {
             margin: 30px 0;
             padding: 40px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
-            border: 3px solid #eaeaea;
+            border: 3px solid rgba(255, 255, 255, 0.2);
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(5px);
         }
 
         .queue-line {
@@ -450,10 +583,10 @@ if (!$student) {
             background: repeating-linear-gradient(90deg,
                     transparent,
                     transparent 40px,
-                    #667eea 40px,
-                    #667eea 42px);
+                    #a8ff78 40px,
+                    #a8ff78 42px);
             margin: 20px 0;
-            border-bottom: 3px solid #667eea;
+            border-bottom: 3px solid #a8ff78;
         }
 
         .walking-person {
@@ -465,15 +598,15 @@ if (!$student) {
         }
 
         .person-male {
-            color: #3498db;
+            color: #78ffd6;
         }
 
         .person-female {
-            color: #e74c3c;
+            color: #ff9a9e;
         }
 
         .current-user {
-            color: #2ecc71;
+            color: #a8ff78;
             font-size: 3.5rem;
             z-index: 10;
             animation: bounce 1s ease-in-out infinite;
@@ -514,9 +647,9 @@ if (!$student) {
         .queue-info {
             margin: 25px 0;
             padding: 20px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
             border-radius: 12px;
-            color: white;
+            color: #333;
         }
 
         .queue-info h3 {
@@ -560,37 +693,37 @@ if (!$student) {
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 20px rgba(168, 255, 120, 0.3);
         }
 
         .btn-success {
-            background: linear-gradient(45deg, #28a745, #20c997);
-            color: white;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
         }
 
         .btn-success:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+            box-shadow: 0 8px 20px rgba(168, 255, 120, 0.3);
         }
 
         .btn-danger {
-            background: linear-gradient(45deg, #dc3545, #e83e8c);
+            background: linear-gradient(to right, #ff6b6b, #ff9a9e);
             color: white;
         }
 
         .btn-danger:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
         }
 
         .btn-warning {
-            background: linear-gradient(45deg, #ffc107, #fd7e14);
+            background: linear-gradient(to right, #ffd93d, #fd7e14);
             color: white;
         }
 
@@ -599,19 +732,33 @@ if (!$student) {
             box-shadow: 0 8px 20px rgba(255, 193, 7, 0.3);
         }
 
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .sidebar {
-                width: 280px;
-            }
-
-            .main-content {
-                margin-left: 280px;
-                width: calc(100% - 280px);
-            }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Responsive adjustments */
         @media (max-width: 768px) {
+            .corner-overlay {
+                width: 300px;
+                height: 300px;
+            }
+
+            .corner-top-left {
+                top: -150px;
+                left: -150px;
+            }
+
+            .corner-bottom-right {
+                bottom: -150px;
+                right: -150px;
+            }
+
             .sidebar {
                 width: 100%;
                 height: auto;
@@ -635,6 +782,16 @@ if (!$student) {
 </head>
 
 <body>
+    <!-- Black corner overlays -->
+    <div class="corner-overlay corner-top-left"></div>
+    <div class="corner-overlay corner-bottom-right"></div>
+
+    <!-- Floating background elements -->
+    <div class="floating"></div>
+    <div class="floating"></div>
+    <div class="floating"></div>
+    <div class="floating"></div>
+
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="profile">
@@ -706,11 +863,9 @@ if (!$student) {
             <div class="counters-section">
                 <h2><i class="fas fa-desktop"></i> Select Counter for Payment</h2>
 
-
-
                 <div class="counters-grid" id="counters-grid">
                     <?php if (empty($counters)): ?>
-                        <div style="text-align: center; padding: 40px; color: #5a6c7d;">
+                        <div style="text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.8);">
                             <i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 15px;"></i>
                             <h3>No Counters Available</h3>
                             <p>All counters are currently inactive. Please check back later.</p>
@@ -729,8 +884,9 @@ if (!$student) {
                                     <?php echo $counter['location']; ?></p>
                                 <p><i class="fas fa-money-bill-wave"></i> <strong>Accepts:</strong>
                                     <?php echo $counter['fee_types'] ?: 'No fees assigned'; ?></p>
-                                <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                                    <small style="color: #5a6c7d;">
+                                <div
+                                    style="margin-top: 15px; padding: 10px; background: rgba(255, 255, 255, 0.1); border-radius: 5px;">
+                                    <small style="color: rgba(255, 255, 255, 0.8);">
                                         <?php if ($counter['is_active'] && $counter['accountant_status']): ?>
                                             ✅ Counter is active - You can join queue
                                         <?php else: ?>
@@ -754,7 +910,7 @@ if (!$student) {
                 </div>
 
                 <div id="fee-form-container">
-                    <h3 style="color: #2c3e50; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <h3 style="color: white; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                         <i class="fas fa-money-check"></i> Select Fees to Pay
                     </h3>
                     <div id="fee-selection"></div>
@@ -769,10 +925,10 @@ if (!$student) {
         <div id="queue-status" class="section" style="display: none;">
             <div class="queue-status" id="queue-status-display">
                 <h2
-                    style="color: #2c3e50; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    style="color: white; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;">
                     <i class="fas fa-clock"></i> Your Queue Status
                 </h2>
-                <p style="color: #5a6c7d; margin-bottom: 20px;">Real-time updates on your position</p>
+                <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 20px;">Real-time updates on your position</p>
 
                 <!-- Queue Animation -->
                 <div class="queue-animation">
@@ -802,7 +958,7 @@ if (!$student) {
                 </div>
 
                 <!-- Last Updated -->
-                <div style="margin-top: 20px; color: #5a6c7d; font-size: 0.9rem;">
+                <div style="margin-top: 20px; color: rgba(255, 255, 255, 0.8); font-size: 0.9rem;">
                     <i class="fas fa-clock"></i> Last updated: <span id="last-updated">Just now</span>
                 </div>
             </div>
@@ -824,6 +980,14 @@ if (!$student) {
             document.querySelectorAll('.section').forEach(section => {
                 section.style.display = 'none';
             });
+
+            // Show/hide fee summary based on section
+            const feeSummary = document.querySelector('.fee-summary');
+            if (sectionName === 'queue-status') {
+                feeSummary.style.display = 'none';
+            } else {
+                feeSummary.style.display = 'block';
+            }
 
             // Show selected section
             const targetSection = document.getElementById(sectionName);
@@ -885,9 +1049,9 @@ if (!$student) {
                                 <input type="checkbox" name="fee_types[]" value="${fee.fee_type_id}" 
                                        onchange="toggleAmountInput(${fee.fee_type_id}, ${fee.remaining_amount})"
                                        style="margin-right: 10px;">
-                                <label style="font-weight: 600; color: #2c3e50;">${fee.fee_name}</label>
-                                <div style="color: #5a6c7d; margin: 5px 0 0 25px;">
-                                    Remaining Balance: <strong style="color: #dc3545;">₹${fee.remaining_amount}</strong>
+                                <label style="font-weight: 600; color: white;">${fee.fee_name}</label>
+                                <div style="color: rgba(255, 255, 255, 0.9); margin: 5px 0 0 25px;">
+                                    Remaining Balance: <strong style="color: #ff6b6b;">₹${fee.remaining_amount}</strong>
                                 </div>
                                 <input type="number" id="amount_${fee.fee_type_id}" name="amounts[${fee.fee_type_id}]" 
                                        placeholder="Enter amount to pay" min="1" max="${fee.remaining_amount}" 
@@ -897,7 +1061,7 @@ if (!$student) {
                 });
             }
 
-            feeSelection.innerHTML = html || '<p style="text-align: center; color: #5a6c7d; padding: 20px;">No pending fees available for this counter.</p>';
+            feeSelection.innerHTML = html || '<p style="text-align: center; color: rgba(255, 255, 255, 0.8); padding: 20px;">No pending fees available for this counter.</p>';
         }
 
         function toggleAmountInput(feeTypeId, maxAmount) {
@@ -1076,7 +1240,7 @@ if (!$student) {
             counter.style.right = '20px';
             counter.style.bottom = '10px';
             counter.style.fontSize = '2rem';
-            counter.style.color = '#28a745';
+            counter.style.color = '#a8ff78';
             counter.innerHTML = '<i class="fas fa-desktop" title="Counter"></i>';
             queueLine.appendChild(counter);
         }
@@ -1110,32 +1274,6 @@ if (!$student) {
                         alert('Error leaving queue. Please try again.');
                     });
             }
-        }
-        function showSection(sectionName) {
-            // Hide all sections
-            document.querySelectorAll('.section').forEach(section => {
-                section.style.display = 'none';
-            });
-
-            // Show/hide fee summary based on section
-            const feeSummary = document.querySelector('.fee-summary');
-            if (sectionName === 'queue-status') {
-                feeSummary.style.display = 'none';
-            } else {
-                feeSummary.style.display = 'block';
-            }
-
-            // Show selected section
-            const targetSection = document.getElementById(sectionName);
-            if (targetSection) {
-                targetSection.style.display = 'block';
-            }
-
-            // Update active nav link
-            document.querySelectorAll('.nav-links a').forEach(link => {
-                link.classList.remove('active');
-            });
-            event.target.classList.add('active');
         }
     </script>
 </body>

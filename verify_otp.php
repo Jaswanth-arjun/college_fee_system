@@ -147,23 +147,126 @@ $demo_otp = isset($_SESSION['demo_otp']) ? $_SESSION['demo_otp'] : '';
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            background:
+                radial-gradient(circle at 10% 20%, rgba(168, 255, 120, 0.3) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 154, 158, 0.3) 0%, transparent 20%),
+                linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Black corner overlays */
+        .corner-overlay {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .corner-top-left {
+            top: -200px;
+            left: -200px;
+            background: radial-gradient(circle, #000000 0%, transparent 70%);
+        }
+
+        .corner-bottom-right {
+            bottom: -200px;
+            right: -200px;
+            background: radial-gradient(circle, #000000 0%, transparent 70%);
+        }
+
+        /* Floating elements for visual interest */
+        .floating {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            animation: float 6s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        .floating:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+            background: rgba(168, 255, 120, 0.2);
+        }
+
+        .floating:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            left: 80%;
+            animation-delay: 2s;
+            background: rgba(255, 154, 158, 0.2);
+        }
+
+        .floating:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 20%;
+            left: 85%;
+            animation-delay: 4s;
+            background: rgba(120, 255, 214, 0.2);
+        }
+
+        .floating:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 80%;
+            left: 15%;
+            animation-delay: 1s;
+            background: rgba(250, 208, 196, 0.2);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
         }
 
         .otp-container {
             width: 100%;
             max-width: 500px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             animation: slideUp 0.5s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        .otp-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
         }
 
         @keyframes slideUp {
@@ -179,10 +282,26 @@ $demo_otp = isset($_SESSION['demo_otp']) ? $_SESSION['demo_otp'] : '';
         }
 
         .otp-header {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            background: rgba(255, 255, 255, 0.1);
             color: white;
             padding: 30px 20px;
             text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .otp-header h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .otp-header p {
+            opacity: 0.9;
+            font-size: 14px;
         }
 
         .otp-body {
@@ -190,12 +309,14 @@ $demo_otp = isset($_SESSION['demo_otp']) ? $_SESSION['demo_otp'] : '';
         }
 
         .email-info {
-            background: #e9ecef;
+            background: rgba(255, 255, 255, 0.1);
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
             text-align: center;
-            border-left: 4px solid #007bff;
+            border-left: 4px solid #a8ff78;
+            color: white;
+            backdrop-filter: blur(5px);
         }
 
         .form-group {
@@ -207,7 +328,7 @@ $demo_otp = isset($_SESSION['demo_otp']) ? $_SESSION['demo_otp'] : '';
             display: block;
             margin-bottom: 10px;
             font-weight: 500;
-            color: #333;
+            color: white;
             font-size: 14px;
             text-align: center;
         }
@@ -225,30 +346,31 @@ $demo_otp = isset($_SESSION['demo_otp']) ? $_SESSION['demo_otp'] : '';
             text-align: center;
             font-size: 24px;
             font-weight: bold;
-            border: 2px solid #e1e5ee;
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 10px;
-            background: #f8f9fa;
+            background: rgba(255, 255, 255, 0.1);
             transition: all 0.3s;
+            color: white;
         }
 
         .otp-input:focus {
             outline: none;
-            border-color: #ff6b6b;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+            border-color: #a8ff78;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(168, 255, 120, 0.2);
             transform: scale(1.05);
         }
 
         .otp-input.filled {
-            border-color: #28a745;
-            background: #f8fff9;
+            border-color: #a8ff78;
+            background: rgba(168, 255, 120, 0.2);
         }
 
         .btn-verify {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
-            color: white;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
             border: none;
             border-radius: 10px;
             font-size: 16px;
@@ -265,9 +387,9 @@ $demo_otp = isset($_SESSION['demo_otp']) ? $_SESSION['demo_otp'] : '';
         .btn-resend {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #6c757d, #5a6268);
+            background: rgba(255, 255, 255, 0.1);
             color: white;
-            border: none;
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             font-size: 14px;
             font-weight: 600;
@@ -280,39 +402,40 @@ $demo_otp = isset($_SESSION['demo_otp']) ? $_SESSION['demo_otp'] : '';
         }
 
         .btn-verify:hover {
-            background: linear-gradient(135deg, #ee5a52, #e53e3e);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+            box-shadow: 0 5px 15px rgba(168, 255, 120, 0.4);
         }
 
         .btn-resend:hover {
-            background: linear-gradient(135deg, #5a6268, #495057);
+            background: rgba(255, 255, 255, 0.2);
             transform: translateY(-2px);
         }
 
         .error-message {
-            background: #f8d7da;
-            color: #721c24;
+            background: rgba(248, 215, 218, 0.2);
+            color: #ff6b6b;
             padding: 12px;
             border-radius: 10px;
             margin-bottom: 20px;
-            border: 1px solid #f5c6cb;
+            border: 1px solid rgba(245, 198, 203, 0.3);
             display: flex;
             align-items: center;
             gap: 10px;
             animation: shake 0.5s;
+            backdrop-filter: blur(5px);
         }
 
         .success-message {
-            background: #d4edda;
-            color: #155724;
+            background: rgba(212, 237, 218, 0.2);
+            color: #a8ff78;
             padding: 12px;
             border-radius: 10px;
             margin-bottom: 20px;
-            border: 1px solid #c3e6cb;
+            border: 1px solid rgba(195, 230, 203, 0.3);
             display: flex;
             align-items: center;
             gap: 10px;
+            backdrop-filter: blur(5px);
         }
 
         @keyframes shake {
@@ -332,12 +455,14 @@ $demo_otp = isset($_SESSION['demo_otp']) ? $_SESSION['demo_otp'] : '';
         }
 
         .demo-otp {
-            background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+            background: linear-gradient(135deg, rgba(168, 255, 120, 0.2), rgba(120, 255, 214, 0.2));
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
             text-align: center;
-            border: 2px dashed #e17055;
+            border: 2px dashed #a8ff78;
+            color: white;
+            backdrop-filter: blur(5px);
         }
 
         .back-link {
@@ -346,19 +471,37 @@ $demo_otp = isset($_SESSION['demo_otp']) ? $_SESSION['demo_otp'] : '';
         }
 
         .back-link a {
-            color: #666;
+            color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
             transition: color 0.3s;
         }
 
         .back-link a:hover {
-            color: #333;
+            color: #a8ff78;
             text-decoration: underline;
         }
 
         .timer {
-            color: #ff6b6b;
+            color: #a8ff78;
             font-weight: bold;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .corner-overlay {
+                width: 300px;
+                height: 300px;
+            }
+
+            .corner-top-left {
+                top: -150px;
+                left: -150px;
+            }
+
+            .corner-bottom-right {
+                bottom: -150px;
+                right: -150px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -376,6 +519,16 @@ $demo_otp = isset($_SESSION['demo_otp']) ? $_SESSION['demo_otp'] : '';
 </head>
 
 <body>
+    <!-- Black corner overlays -->
+    <div class="corner-overlay corner-top-left"></div>
+    <div class="corner-overlay corner-bottom-right"></div>
+
+    <!-- Floating background elements -->
+    <div class="floating"></div>
+    <div class="floating"></div>
+    <div class="floating"></div>
+    <div class="floating"></div>
+
     <div class="otp-container">
         <div class="otp-header">
             <h2><i class="fas fa-shield-alt"></i> Verify Email</h2>

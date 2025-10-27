@@ -377,50 +377,131 @@ $pending_queue = get_pending_queue_count($conn);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - College Fee System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #4361ee;
-            --primary-dark: #3a56d4;
-            --secondary: #6c757d;
-            --success: #28a745;
-            --danger: #dc3545;
-            --warning: #ffc107;
-            --info: #17a2b8;
-            --light: #f8f9fa;
-            --dark: #343a40;
-            --white: #ffffff;
-            --sidebar: #1a1f36;
-            --sidebar-hover: #2d3748;
-            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --transition: all 0.3s ease;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f7fb;
-            color: #333;
-            line-height: 1.6;
-            display: flex;
             min-height: 100vh;
+            display: flex;
+            background:
+                radial-gradient(circle at 10% 20%, rgba(168, 255, 120, 0.3) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 154, 158, 0.3) 0%, transparent 20%),
+                linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            overflow-x: hidden;
+            position: relative;
         }
 
+        /* Black corner overlays */
+        .corner-overlay {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .corner-top-left {
+            top: -200px;
+            left: -200px;
+            background: radial-gradient(circle, #000000 0%, transparent 70%);
+        }
+
+        .corner-bottom-right {
+            bottom: -200px;
+            right: -200px;
+            background: radial-gradient(circle, #000000 0%, transparent 70%);
+        }
+
+        /* Floating elements for visual interest */
+        .floating {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            animation: float 6s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        .floating:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+            background: rgba(168, 255, 120, 0.2);
+        }
+
+        .floating:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            left: 80%;
+            animation-delay: 2s;
+            background: rgba(255, 154, 158, 0.2);
+        }
+
+        .floating:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 20%;
+            left: 85%;
+            animation-delay: 4s;
+            background: rgba(120, 255, 214, 0.2);
+        }
+
+        .floating:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 80%;
+            left: 15%;
+            animation-delay: 1s;
+            background: rgba(250, 208, 196, 0.2);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+        }
+
+        /* Sidebar */
         .sidebar {
             width: 260px;
-            background: var(--sidebar);
-            color: var(--white);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             height: 100vh;
             padding: 0;
             position: fixed;
-            transition: var(--transition);
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
+            z-index: 1;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
         }
 
         .sidebar-header {
@@ -435,10 +516,11 @@ $pending_queue = get_pending_queue_count($conn);
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .sidebar-header h2 i {
-            color: var(--primary);
+            color: white;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         .nav-links {
@@ -451,7 +533,7 @@ $pending_queue = get_pending_queue_count($conn);
         }
 
         .nav-links a {
-            color: #b0b7c3;
+            color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
             padding: 12px 15px;
             display: flex;
@@ -459,19 +541,20 @@ $pending_queue = get_pending_queue_count($conn);
             gap: 12px;
             border-radius: 8px;
             cursor: pointer;
-            transition: var(--transition);
+            transition: all 0.3s ease;
             font-weight: 500;
+            backdrop-filter: blur(5px);
         }
 
         .nav-links a:hover {
-            background: var(--sidebar-hover);
-            color: var(--white);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
 
         .nav-links a.active {
-            background: var(--primary);
-            color: var(--white);
-            box-shadow: 0 4px 6px rgba(66, 97, 238, 0.2);
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
+            box-shadow: 0 4px 6px rgba(168, 255, 120, 0.2);
         }
 
         .nav-links a i {
@@ -479,33 +562,42 @@ $pending_queue = get_pending_queue_count($conn);
             text-align: center;
         }
 
+        /* Main Content */
         .main-content {
             margin-left: 260px;
             padding: 20px;
             width: calc(100% - 260px);
-            transition: var(--transition);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
         }
 
         .header {
-            background: var(--white);
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px 25px;
             border-radius: 12px;
             margin-bottom: 25px;
-            box-shadow: var(--card-shadow);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .header-content h1 {
             font-size: 1.8rem;
             font-weight: 700;
-            color: var(--dark);
+            color: white;
             margin-bottom: 5px;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         .header-content p {
-            color: var(--secondary);
+            color: rgba(255, 255, 255, 0.9);
             font-size: 0.95rem;
         }
 
@@ -519,8 +611,8 @@ $pending_queue = get_pending_queue_count($conn);
             width: 45px;
             height: 45px;
             border-radius: 50%;
-            background: var(--primary);
-            color: white;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -535,19 +627,15 @@ $pending_queue = get_pending_queue_count($conn);
         }
 
         .stat-card {
-            background: var(--white);
+            background: rgba(255, 255, 255, 0.1);
             padding: 25px;
             border-radius: 12px;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition);
-            border-left: 4px solid var(--primary);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             position: relative;
             overflow: hidden;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
         }
 
         .stat-card::before {
@@ -557,23 +645,13 @@ $pending_queue = get_pending_queue_count($conn);
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
         }
 
-        .stat-card.students {
-            border-left-color: var(--info);
-        }
-
-        .stat-card.accountants {
-            border-left-color: var(--success);
-        }
-
-        .stat-card.revenue {
-            border-left-color: var(--warning);
-        }
-
-        .stat-card.queue {
-            border-left-color: var(--danger);
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .stat-icon {
@@ -585,30 +663,12 @@ $pending_queue = get_pending_queue_count($conn);
             justify-content: center;
             margin-bottom: 15px;
             font-size: 1.5rem;
-        }
-
-        .stat-card.students .stat-icon {
-            background: rgba(23, 162, 184, 0.1);
-            color: var(--info);
-        }
-
-        .stat-card.accountants .stat-icon {
-            background: rgba(40, 167, 69, 0.1);
-            color: var(--success);
-        }
-
-        .stat-card.revenue .stat-icon {
-            background: rgba(255, 193, 7, 0.1);
-            color: var(--warning);
-        }
-
-        .stat-card.queue .stat-icon {
-            background: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
         }
 
         .stat-card h3 {
-            color: var(--secondary);
+            color: rgba(255, 255, 255, 0.9);
             font-size: 0.9rem;
             font-weight: 500;
             margin-bottom: 8px;
@@ -619,7 +679,7 @@ $pending_queue = get_pending_queue_count($conn);
         .stat-card .number {
             font-size: 2rem;
             font-weight: 700;
-            color: var(--dark);
+            color: white;
             margin-bottom: 5px;
         }
 
@@ -628,19 +688,21 @@ $pending_queue = get_pending_queue_count($conn);
             align-items: center;
             gap: 5px;
             font-size: 0.85rem;
-            color: var(--success);
+            color: #a8ff78;
         }
 
         .stat-trend.down {
-            color: var(--danger);
+            color: #ff6b6b;
         }
 
         .section {
-            background: var(--white);
+            background: rgba(255, 255, 255, 0.1);
             padding: 25px;
             border-radius: 12px;
             margin-bottom: 25px;
-            box-shadow: var(--card-shadow);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .section-header {
@@ -649,20 +711,20 @@ $pending_queue = get_pending_queue_count($conn);
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 1px solid #eaeaea;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .section-header h2 {
             font-size: 1.4rem;
             font-weight: 600;
-            color: var(--dark);
+            color: white;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
         .section-header h2 i {
-            color: var(--primary);
+            color: #a8ff78;
         }
 
         .data-table {
@@ -675,18 +737,20 @@ $pending_queue = get_pending_queue_count($conn);
         .data-table td {
             padding: 15px;
             text-align: left;
-            border-bottom: 1px solid #eaeaea;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
         }
 
         .data-table th {
-            background: #f8fafc;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
             font-weight: 600;
-            color: var(--dark);
             font-size: 0.9rem;
+            backdrop-filter: blur(5px);
         }
 
         .data-table tr:hover {
-            background: #f8fafc;
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .table-container {
@@ -703,7 +767,7 @@ $pending_queue = get_pending_queue_count($conn);
             align-items: center;
             gap: 8px;
             font-weight: 500;
-            transition: var(--transition);
+            transition: all 0.3s ease;
             font-size: 0.9rem;
         }
 
@@ -713,48 +777,51 @@ $pending_queue = get_pending_queue_count($conn);
         }
 
         .btn-primary {
-            background: var(--primary);
-            color: var(--white);
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
         }
 
         .btn-primary:hover {
-            background: var(--primary-dark);
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(168, 255, 120, 0.3);
         }
 
         .btn-danger {
-            background: var(--danger);
-            color: var(--white);
+            background: linear-gradient(to right, #ff6b6b, #ff9a9e);
+            color: white;
         }
 
         .btn-danger:hover {
-            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
         }
 
         .btn-success {
-            background: var(--success);
-            color: var(--white);
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
         }
 
         .btn-success:hover {
-            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(168, 255, 120, 0.3);
         }
 
         .btn-outline {
             background: transparent;
-            border: 1px solid #ddd;
-            color: var(--secondary);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .btn-outline:hover {
-            background: #f8f9fa;
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .form-container {
-            background: #f8fafc;
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 25px;
+            backdrop-filter: blur(10px);
         }
 
         .form-group {
@@ -765,7 +832,7 @@ $pending_queue = get_pending_queue_count($conn);
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: var(--dark);
+            color: white;
         }
 
         .form-group input,
@@ -773,19 +840,24 @@ $pending_queue = get_pending_queue_count($conn);
         .form-group textarea {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            transition: var(--transition);
-            background: var(--white);
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
         }
 
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(66, 97, 238, 0.1);
+            border-color: #a8ff78;
+            box-shadow: 0 0 0 3px rgba(168, 255, 120, 0.2);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .form-row {
@@ -798,16 +870,23 @@ $pending_queue = get_pending_queue_count($conn);
         }
 
         .card {
-            background: var(--white);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            box-shadow: var(--card-shadow);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .card-header {
             padding: 20px;
-            border-bottom: 1px solid #eaeaea;
-            background: #f8fafc;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .card-header h3 {
+            color: white;
+            font-size: 1.2rem;
         }
 
         .card-body {
@@ -827,7 +906,8 @@ $pending_queue = get_pending_queue_count($conn);
         }
 
         .modal-content {
-            background-color: white;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
             margin: 5% auto;
             padding: 0;
             border-radius: 12px;
@@ -835,6 +915,7 @@ $pending_queue = get_pending_queue_count($conn);
             max-width: 600px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             animation: modalSlideIn 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         @keyframes modalSlideIn {
@@ -851,7 +932,7 @@ $pending_queue = get_pending_queue_count($conn);
 
         .modal-header {
             padding: 20px 25px;
-            border-bottom: 1px solid #eaeaea;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -860,19 +941,19 @@ $pending_queue = get_pending_queue_count($conn);
         .modal-header h3 {
             font-size: 1.3rem;
             font-weight: 600;
-            color: var(--dark);
+            color: white;
         }
 
         .close {
             font-size: 24px;
             font-weight: bold;
             cursor: pointer;
-            color: var(--secondary);
-            transition: var(--transition);
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
         }
 
         .close:hover {
-            color: var(--dark);
+            color: white;
         }
 
         .modal-body {
@@ -881,7 +962,7 @@ $pending_queue = get_pending_queue_count($conn);
 
         .modal-footer {
             padding: 15px 25px;
-            border-top: 1px solid #eaeaea;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
             display: flex;
             justify-content: flex-end;
             gap: 10px;
@@ -892,18 +973,19 @@ $pending_queue = get_pending_queue_count($conn);
             margin: 15px 0;
             border-radius: 8px;
             border-left: 4px solid;
+            backdrop-filter: blur(5px);
         }
 
         .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border-left-color: #28a745;
+            background-color: rgba(212, 237, 218, 0.2);
+            color: #a8ff78;
+            border-left-color: #a8ff78;
         }
 
         .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-left-color: #dc3545;
+            background-color: rgba(248, 215, 218, 0.2);
+            color: #ff6b6b;
+            border-left-color: #ff6b6b;
         }
 
         .badge {
@@ -912,26 +994,31 @@ $pending_queue = get_pending_queue_count($conn);
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 600;
+            backdrop-filter: blur(5px);
         }
 
         .badge-success {
-            background: #d4edda;
-            color: #155724;
+            background: rgba(168, 255, 120, 0.2);
+            color: #a8ff78;
+            border: 1px solid #a8ff78;
         }
 
         .badge-danger {
-            background: #f8d7da;
-            color: #721c24;
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
         }
 
         .badge-warning {
-            background: #fff3cd;
-            color: #856404;
+            background: rgba(255, 217, 61, 0.2);
+            color: #ffd93d;
+            border: 1px solid #ffd93d;
         }
 
         .badge-info {
-            background: #d1ecf1;
-            color: #0c5460;
+            background: rgba(120, 255, 214, 0.2);
+            color: #78ffd6;
+            border: 1px solid #78ffd6;
         }
 
         .fee-types-grid {
@@ -946,42 +1033,46 @@ $pending_queue = get_pending_queue_count($conn);
             align-items: center;
             gap: 10px;
             padding: 10px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
-            transition: var(--transition);
+            transition: all 0.3s ease;
+            color: white;
+            backdrop-filter: blur(5px);
         }
 
         .fee-type-checkbox:hover {
-            border-color: var(--primary);
-            background: #f8fafc;
+            border-color: #a8ff78;
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        @media (max-width: 1024px) {
-            .sidebar {
-                width: 80px;
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .corner-overlay {
+                width: 300px;
+                height: 300px;
             }
 
-            .sidebar-header h2 span,
-            .nav-links a span {
-                display: none;
+            .corner-top-left {
+                top: -150px;
+                left: -150px;
+            }
+
+            .corner-bottom-right {
+                bottom: -150px;
+                right: -150px;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
             }
 
             .main-content {
-                margin-left: 80px;
-                width: calc(100% - 80px);
+                margin-left: 0;
+                width: 100%;
             }
 
-            .nav-links a {
-                justify-content: center;
-                padding: 15px;
-            }
-
-            .nav-links a i {
-                font-size: 1.2rem;
-            }
-        }
-
-        @media (max-width: 768px) {
             .form-row {
                 flex-direction: column;
                 gap: 0;
@@ -999,6 +1090,16 @@ $pending_queue = get_pending_queue_count($conn);
 </head>
 
 <body>
+    <!-- Black corner overlays -->
+    <div class="corner-overlay corner-top-left"></div>
+    <div class="corner-overlay corner-bottom-right"></div>
+
+    <!-- Floating background elements -->
+    <div class="floating"></div>
+    <div class="floating"></div>
+    <div class="floating"></div>
+    <div class="floating"></div>
+
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
@@ -1031,16 +1132,16 @@ $pending_queue = get_pending_queue_count($conn);
                     <i class="fas fa-user-shield"></i>
                 </div>
                 <div>
-                    <div style="font-weight: 600;">Administrator</div>
-                    <div style="font-size: 0.85rem; color: var(--secondary);">Admin</div>
+                    <div style="font-weight: 600; color: white;">Administrator</div>
+                    <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.8);">Admin</div>
                 </div>
             </div>
         </div>
 
         <!-- Statistics -->
         <div class="stats-grid">
-            <div class="stat-card students">
-                <div class="stat-icon">
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #78ffd6;">
                     <i class="fas fa-users"></i>
                 </div>
                 <h3>TOTAL STUDENTS</h3>
@@ -1050,8 +1151,8 @@ $pending_queue = get_pending_queue_count($conn);
                     <span>5% from last month</span>
                 </div>
             </div>
-            <div class="stat-card accountants">
-                <div class="stat-icon">
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #a8ff78;">
                     <i class="fas fa-user-tie"></i>
                 </div>
                 <h3>ACTIVE ACCOUNTANTS</h3>
@@ -1061,8 +1162,8 @@ $pending_queue = get_pending_queue_count($conn);
                     <span>2 new this month</span>
                 </div>
             </div>
-            <div class="stat-card revenue">
-                <div class="stat-icon">
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #ffd93d;">
                     <i class="fas fa-rupee-sign"></i>
                 </div>
                 <h3>TOTAL COLLECTED</h3>
@@ -1072,8 +1173,8 @@ $pending_queue = get_pending_queue_count($conn);
                     <span>12% increase</span>
                 </div>
             </div>
-            <div class="stat-card queue">
-                <div class="stat-icon">
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #ff9a9e;">
                     <i class="fas fa-clock"></i>
                 </div>
                 <h3>IN QUEUE</h3>
@@ -1094,7 +1195,7 @@ $pending_queue = get_pending_queue_count($conn);
                 </button>
             </div>
             <div class="recent-activities">
-                <h3 style="margin-bottom: 15px; color: var(--dark);">Recent Transactions</h3>
+                <h3 style="margin-bottom: 15px; color: white;">Recent Transactions</h3>
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
@@ -1385,7 +1486,7 @@ $pending_queue = get_pending_queue_count($conn);
                 <form id="assignFeesForm">
                     <input type="hidden" id="modal_counter_id" name="counter_id">
                     <div class="form-group">
-                        <label>Select Fee Types:</label>
+                        <label style="color: white;">Select Fee Types:</label>
                         <div class="fee-types-grid" id="feeTypesCheckboxes">
                             <!-- Fee types checkboxes will be loaded here -->
                         </div>
@@ -1489,7 +1590,7 @@ $pending_queue = get_pending_queue_count($conn);
                     tbody.innerHTML = '';
 
                     if (data.error) {
-                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Error loading fee types</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ff6b6b;">Error loading fee types</td></tr>';
                         return;
                     }
 
@@ -1512,7 +1613,7 @@ $pending_queue = get_pending_queue_count($conn);
                 .catch(error => {
                     console.error('Error loading fee types:', error);
                     const tbody = document.querySelector('#feeTypesTable tbody');
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Error loading fee types</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ff6b6b;">Error loading fee types</td></tr>';
                 });
         }
 
@@ -1569,7 +1670,7 @@ $pending_queue = get_pending_queue_count($conn);
                     tbody.innerHTML = '';
 
                     if (data.error) {
-                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Error loading counters</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ff6b6b;">Error loading counters</td></tr>';
                         return;
                     }
 
@@ -1591,7 +1692,7 @@ $pending_queue = get_pending_queue_count($conn);
                 .catch(error => {
                     console.error('Error loading counters:', error);
                     const tbody = document.querySelector('#countersTable tbody');
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Error loading counters</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ff6b6b;">Error loading counters</td></tr>';
                 });
         }
 
@@ -1616,7 +1717,7 @@ $pending_queue = get_pending_queue_count($conn);
                     container.innerHTML = '';
 
                     if (data.error) {
-                        container.innerHTML = '<div style="text-align: center; color: red;">Error loading fee types</div>';
+                        container.innerHTML = '<div style="text-align: center; color: #ff6b6b;">Error loading fee types</div>';
                         return;
                     }
 
@@ -1633,7 +1734,7 @@ $pending_queue = get_pending_queue_count($conn);
                 .catch(error => {
                     console.error('Error loading fee types for assignment:', error);
                     const container = document.getElementById('feeTypesCheckboxes');
-                    container.innerHTML = '<div style="text-align: center; color: red;">Error loading fee types</div>';
+                    container.innerHTML = '<div style="text-align: center; color: #ff6b6b;">Error loading fee types</div>';
                 });
         }
 
@@ -1748,7 +1849,7 @@ $pending_queue = get_pending_queue_count($conn);
                     tbody.innerHTML = '';
 
                     if (data.error) {
-                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: red;">Error loading accountants</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #ff6b6b;">Error loading accountants</td></tr>';
                         return;
                     }
 
@@ -1775,7 +1876,7 @@ $pending_queue = get_pending_queue_count($conn);
                 .catch(error => {
                     console.error('Error loading accountants:', error);
                     const tbody = document.querySelector('#accountantsTable tbody');
-                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: red;">Error loading accountants</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #ff6b6b;">Error loading accountants</td></tr>';
                 });
         }
 
@@ -1825,7 +1926,7 @@ $pending_queue = get_pending_queue_count($conn);
                     const container = document.getElementById('reportsData');
 
                     if (data.error) {
-                        container.innerHTML = '<div style="text-align: center; color: red;">Error generating reports</div>';
+                        container.innerHTML = '<div style="text-align: center; color: #ff6b6b;">Error generating reports</div>';
                         return;
                     }
 
@@ -1882,7 +1983,7 @@ $pending_queue = get_pending_queue_count($conn);
                 .catch(error => {
                     console.error('Error generating reports:', error);
                     const container = document.getElementById('reportsData');
-                    container.innerHTML = '<div style="text-align: center; color: red;">Error generating reports</div>';
+                    container.innerHTML = '<div style="text-align: center; color: #ff6b6b;">Error generating reports</div>';
                 });
         }
 

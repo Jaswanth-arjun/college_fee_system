@@ -67,23 +67,126 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            background:
+                radial-gradient(circle at 10% 20%, rgba(168, 255, 120, 0.3) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 154, 158, 0.3) 0%, transparent 20%),
+                linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Black corner overlays */
+        .corner-overlay {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .corner-top-left {
+            top: -200px;
+            left: -200px;
+            background: radial-gradient(circle, #000000 0%, transparent 70%);
+        }
+
+        .corner-bottom-right {
+            bottom: -200px;
+            right: -200px;
+            background: radial-gradient(circle, #000000 0%, transparent 70%);
+        }
+
+        /* Floating elements for visual interest */
+        .floating {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            animation: float 6s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        .floating:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+            background: rgba(168, 255, 120, 0.2);
+        }
+
+        .floating:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            left: 80%;
+            animation-delay: 2s;
+            background: rgba(255, 154, 158, 0.2);
+        }
+
+        .floating:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 20%;
+            left: 85%;
+            animation-delay: 4s;
+            background: rgba(120, 255, 214, 0.2);
+        }
+
+        .floating:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 80%;
+            left: 15%;
+            animation-delay: 1s;
+            background: rgba(250, 208, 196, 0.2);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
         }
 
         .login-container {
             width: 100%;
             max-width: 450px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             animation: slideUp 0.5s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
         }
 
         @keyframes slideUp {
@@ -99,16 +202,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .login-header {
-            background: linear-gradient(135deg, #007bff, #0056b3);
+            background: rgba(255, 255, 255, 0.1);
             color: white;
             padding: 30px 20px;
             text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .login-header h2 {
             font-size: 28px;
             margin-bottom: 10px;
             font-weight: 600;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         .login-header p {
@@ -129,7 +237,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: #333;
+            color: white;
             font-size: 14px;
         }
 
@@ -142,33 +250,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             left: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: #666;
+            color: rgba(255, 255, 255, 0.7);
         }
 
         input,
         select {
             width: 100%;
             padding: 15px 15px 15px 45px;
-            border: 2px solid #e1e5ee;
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             font-size: 16px;
             transition: all 0.3s;
-            background: #f8f9fa;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
         }
 
         input:focus,
         select:focus {
             outline: none;
-            border-color: #007bff;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            border-color: #a8ff78;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(168, 255, 120, 0.2);
         }
 
         .btn-login {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
             border: none;
             border-radius: 10px;
             font-size: 16px;
@@ -182,9 +295,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .btn-login:hover {
-            background: linear-gradient(135deg, #0056b3, #004085);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+            box-shadow: 0 5px 15px rgba(168, 255, 120, 0.4);
         }
 
         .btn-login:active {
@@ -192,16 +304,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .error-message {
-            background: #f8d7da;
-            color: #721c24;
+            background: rgba(248, 215, 218, 0.2);
+            color: #ff6b6b;
             padding: 12px;
             border-radius: 10px;
             margin-bottom: 20px;
-            border: 1px solid #f5c6cb;
+            border: 1px solid rgba(245, 198, 203, 0.3);
             display: flex;
             align-items: center;
             gap: 10px;
             animation: shake 0.5s;
+            backdrop-filter: blur(5px);
         }
 
         @keyframes shake {
@@ -223,18 +336,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .register-link {
             text-align: center;
             margin-top: 25px;
-            color: #666;
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .register-link a {
-            color: #007bff;
+            color: #a8ff78;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
         }
 
         .register-link a:hover {
-            color: #0056b3;
+            color: #78ffd6;
             text-decoration: underline;
         }
 
@@ -248,21 +361,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .user-type-option {
             text-align: center;
             padding: 12px;
-            border: 2px solid #e1e5ee;
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s;
-            background: #f8f9fa;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
 
         .user-type-option:hover {
-            border-color: #007bff;
-            background: white;
+            border-color: #a8ff78;
+            background: rgba(168, 255, 120, 0.1);
         }
 
         .user-type-option.active {
-            border-color: #007bff;
-            background: #007bff;
+            border-color: #a8ff78;
+            background: rgba(168, 255, 120, 0.2);
             color: white;
         }
 
@@ -275,6 +389,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .user-type-option span {
             font-size: 12px;
             font-weight: 500;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .corner-overlay {
+                width: 300px;
+                height: 300px;
+            }
+
+            .corner-top-left {
+                top: -150px;
+                left: -150px;
+            }
+
+            .corner-bottom-right {
+                bottom: -150px;
+                right: -150px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -290,6 +422,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 
 <body>
+    <!-- Black corner overlays -->
+    <div class="corner-overlay corner-top-left"></div>
+    <div class="corner-overlay corner-bottom-right"></div>
+
+    <!-- Floating background elements -->
+    <div class="floating"></div>
+    <div class="floating"></div>
+    <div class="floating"></div>
+    <div class="floating"></div>
+
     <div class="login-container">
         <div class="login-header">
             <h2><i class="fas fa-graduation-cap"></i> College Fee System</h2>

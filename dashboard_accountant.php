@@ -22,69 +22,174 @@ $queue = get_current_queue($conn, $counter_id);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accountant Dashboard - College Fee System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 10% 20%, rgba(168, 255, 120, 0.3) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 154, 158, 0.3) 0%, transparent 20%),
+                linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Black corner overlays */
+        .corner-overlay {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .corner-top-left {
+            top: -200px;
+            left: -200px;
+            background: radial-gradient(circle, #000000 0%, transparent 70%);
+        }
+
+        .corner-bottom-right {
+            bottom: -200px;
+            right: -200px;
+            background: radial-gradient(circle, #000000 0%, transparent 70%);
+        }
+
+        /* Floating elements for visual interest */
+        .floating {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            animation: float 6s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        .floating:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+            background: rgba(168, 255, 120, 0.2);
+        }
+
+        .floating:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            left: 80%;
+            animation-delay: 2s;
+            background: rgba(255, 154, 158, 0.2);
+        }
+
+        .floating:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 20%;
+            left: 85%;
+            animation-delay: 4s;
+            background: rgba(120, 255, 214, 0.2);
+        }
+
+        .floating:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 80%;
+            left: 15%;
+            animation-delay: 1s;
+            background: rgba(250, 208, 196, 0.2);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
         }
 
         /* Header */
         .header {
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 1;
         }
 
         .header-info h1 {
-            color: #2c3e50;
+            color: white;
             margin-bottom: 5px;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         .header-info p {
-            color: #666;
+            color: rgba(255, 255, 255, 0.9);
         }
 
         .counter-badge {
-            background: #007bff;
-            color: white;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
             padding: 10px 20px;
             border-radius: 20px;
             font-weight: bold;
+            backdrop-filter: blur(5px);
         }
 
         /* Main Layout */
         .main-container {
             display: flex;
             min-height: calc(100vh - 80px);
+            position: relative;
+            z-index: 1;
         }
 
         /* Queue Sidebar */
         .queue-sidebar {
             width: 350px;
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .queue-stats {
-            background: #f8f9fa;
+            background: rgba(255, 255, 255, 0.1);
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .queue-stats h3 {
             margin-bottom: 10px;
-            color: #2c3e50;
+            color: white;
         }
 
         .stats-grid {
@@ -97,16 +202,19 @@ $queue = get_current_queue($conn, $counter_id);
             text-align: center;
             padding: 10px;
             border-radius: 5px;
+            backdrop-filter: blur(5px);
         }
 
         .stat.waiting {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
+            background: rgba(255, 243, 205, 0.2);
+            border: 1px solid rgba(255, 234, 167, 0.3);
+            color: #ffd93d;
         }
 
         .stat.completed {
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
+            background: rgba(209, 236, 241, 0.2);
+            border: 1px solid rgba(190, 229, 235, 0.3);
+            color: #78ffd6;
         }
 
         .stat .number {
@@ -116,7 +224,7 @@ $queue = get_current_queue($conn, $counter_id);
 
         .stat .label {
             font-size: 12px;
-            color: #666;
+            color: rgba(255, 255, 255, 0.8);
         }
 
         /* Queue List */
@@ -126,28 +234,30 @@ $queue = get_current_queue($conn, $counter_id);
         }
 
         .queue-item {
-            background: white;
-            border: 1px solid #e9ecef;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.3s;
+            backdrop-filter: blur(10px);
         }
 
         .queue-item:hover {
-            border-color: #007bff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-color: #a8ff78;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .queue-item.active {
-            border-color: #28a745;
-            background: #f8fff9;
+            border-color: #a8ff78;
+            background: rgba(168, 255, 120, 0.2);
         }
 
         .queue-item.processing {
-            border-color: #ffc107;
-            background: #fffdf6;
+            border-color: #ffd93d;
+            background: rgba(255, 217, 61, 0.2);
         }
 
         .student-info {
@@ -160,8 +270,8 @@ $queue = get_current_queue($conn, $counter_id);
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: #007bff;
-            color: white;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -171,21 +281,22 @@ $queue = get_current_queue($conn, $counter_id);
 
         .student-details h4 {
             margin: 0;
-            color: #2c3e50;
+            color: white;
         }
 
         .student-details p {
             margin: 2px 0;
-            color: #666;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 12px;
         }
 
         .queue-position {
-            background: #6c757d;
+            background: rgba(108, 117, 125, 0.3);
             color: white;
             padding: 2px 8px;
             border-radius: 10px;
             font-size: 12px;
+            backdrop-filter: blur(5px);
         }
 
         /* Main Content */
@@ -196,17 +307,19 @@ $queue = get_current_queue($conn, $counter_id);
 
         /* Current Student Card */
         .current-student {
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             padding: 25px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .current-student h2 {
-            color: #2c3e50;
+            color: white;
             margin-bottom: 20px;
-            border-bottom: 2px solid #f4f4f4;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
             padding-bottom: 10px;
         }
 
@@ -220,8 +333,8 @@ $queue = get_current_queue($conn, $counter_id);
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background: #007bff;
-            color: white;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -232,12 +345,12 @@ $queue = get_current_queue($conn, $counter_id);
 
         .student-details-large h3 {
             margin: 0 0 5px 0;
-            color: #2c3e50;
+            color: white;
         }
 
         .student-details-large p {
             margin: 2px 0;
-            color: #666;
+            color: rgba(255, 255, 255, 0.9);
         }
 
         /* Fee Details */
@@ -254,21 +367,29 @@ $queue = get_current_queue($conn, $counter_id);
         .fee-table td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
         }
 
         .fee-table th {
-            background: #f8f9fa;
+            background: rgba(255, 255, 255, 0.1);
             font-weight: bold;
-            color: #495057;
+            color: white;
+            backdrop-filter: blur(5px);
         }
 
         .amount-input {
             width: 120px;
             padding: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 5px;
             text-align: right;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .amount-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
         }
 
         /* Actions */
@@ -281,46 +402,58 @@ $queue = get_current_queue($conn, $counter_id);
         .btn {
             padding: 12px 25px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
             font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-primary {
-            background: #007bff;
-            color: white;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
         }
 
         .btn-success {
-            background: #28a745;
-            color: white;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
         }
 
         .btn-warning {
-            background: #ffc107;
-            color: #212529;
+            background: linear-gradient(to right, #ffd93d, #fd7e14);
+            color: #333;
         }
 
         .btn-danger {
-            background: #dc3545;
+            background: linear-gradient(to right, #ff6b6b, #ff9a9e);
             color: white;
         }
 
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
         .btn:disabled {
-            background: #6c757d;
+            background: rgba(108, 117, 125, 0.3);
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         /* No Student Message */
         .no-student {
             text-align: center;
             padding: 40px;
-            color: #666;
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .no-student h3 {
             margin-bottom: 10px;
+            color: white;
         }
 
         /* Receipt Modal */
@@ -333,17 +466,21 @@ $queue = get_current_queue($conn, $counter_id);
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
+            backdrop-filter: blur(2px);
         }
 
         .modal-content {
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
             margin: 50px auto;
             padding: 30px;
-            border-radius: 10px;
+            border-radius: 12px;
             width: 80%;
             max-width: 600px;
             max-height: 80vh;
             overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
         .modal-header {
@@ -351,13 +488,13 @@ $queue = get_current_queue($conn, $counter_id);
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             padding-bottom: 10px;
         }
 
         .modal-header h2 {
             margin: 0;
-            color: #2c3e50;
+            color: white;
         }
 
         .close {
@@ -365,12 +502,18 @@ $queue = get_current_queue($conn, $counter_id);
             border: none;
             font-size: 24px;
             cursor: pointer;
-            color: #666;
+            color: rgba(255, 255, 255, 0.8);
+            transition: color 0.3s;
+        }
+
+        .close:hover {
+            color: white;
         }
 
         /* Receipt Styling */
         .receipt {
             font-family: 'Courier New', monospace;
+            color: white;
         }
 
         .receipt-header {
@@ -380,7 +523,7 @@ $queue = get_current_queue($conn, $counter_id);
 
         .receipt-header h1 {
             margin: 0;
-            color: #2c3e50;
+            color: white;
         }
 
         .receipt-details {
@@ -396,7 +539,8 @@ $queue = get_current_queue($conn, $counter_id);
         .receipt-table th,
         .receipt-table td {
             padding: 8px;
-            border-bottom: 1px dashed #ddd;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.3);
+            color: white;
         }
 
         .receipt-table th {
@@ -404,7 +548,7 @@ $queue = get_current_queue($conn, $counter_id);
         }
 
         .receipt-total {
-            border-top: 2px solid #000;
+            border-top: 2px solid rgba(255, 255, 255, 0.5);
             margin-top: 20px;
             padding-top: 10px;
             font-weight: bold;
@@ -413,13 +557,60 @@ $queue = get_current_queue($conn, $counter_id);
         .receipt-footer {
             text-align: center;
             margin-top: 30px;
-            color: #666;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 12px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .corner-overlay {
+                width: 300px;
+                height: 300px;
+            }
+
+            .corner-top-left {
+                top: -150px;
+                left: -150px;
+            }
+
+            .corner-bottom-right {
+                bottom: -150px;
+                right: -150px;
+            }
+
+            .main-container {
+                flex-direction: column;
+            }
+
+            .queue-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 
 <body>
+    <!-- Black corner overlays -->
+    <div class="corner-overlay corner-top-left"></div>
+    <div class="corner-overlay corner-bottom-right"></div>
+
+    <!-- Floating background elements -->
+    <div class="floating"></div>
+    <div class="floating"></div>
+    <div class="floating"></div>
+    <div class="floating"></div>
+
     <!-- Header -->
     <div class="header">
         <div class="header-info">
@@ -436,7 +627,7 @@ $queue = get_current_queue($conn, $counter_id);
         <!-- Queue Sidebar -->
         <div class="queue-sidebar">
             <div class="queue-stats">
-                <h3>Queue Statistics</h3>
+                <h3><i class="fas fa-chart-bar"></i> Queue Statistics</h3>
                 <div class="stats-grid">
                     <div class="stat waiting">
                         <div class="number" id="waiting-count">
@@ -453,7 +644,7 @@ $queue = get_current_queue($conn, $counter_id);
                 </div>
             </div>
 
-            <h3>Current Queue</h3>
+            <h3 style="color: white; margin-bottom: 15px;"><i class="fas fa-list"></i> Current Queue</h3>
             <div class="queue-list" id="queue-list">
                 <?php if (empty($queue)): ?>
                     <div class="no-student">
@@ -483,12 +674,12 @@ $queue = get_current_queue($conn, $counter_id);
         <div class="main-content">
             <div class="current-student" id="current-student-container">
                 <div class="no-student" id="no-student-message">
-                    <h3>No Student Selected</h3>
+                    <h3><i class="fas fa-user-clock"></i> No Student Selected</h3>
                     <p>Click on a student from the queue to start processing</p>
                 </div>
 
                 <div id="student-details" style="display: none;">
-                    <h2>Process Payment</h2>
+                    <h2><i class="fas fa-money-bill-wave"></i> Process Payment</h2>
 
                     <!-- Student Header -->
                     <div class="student-header">
@@ -505,7 +696,8 @@ $queue = get_current_queue($conn, $counter_id);
 
                     <!-- Fee Details -->
                     <div class="fee-details">
-                        <h4>Selected Fees for Payment</h4>
+                        <h4 style="color: white; margin-bottom: 15px;"><i class="fas fa-receipt"></i> Selected Fees for
+                            Payment</h4>
                         <table class="fee-table" id="fee-details-table">
                             <thead>
                                 <tr>
@@ -525,13 +717,13 @@ $queue = get_current_queue($conn, $counter_id);
                     <!-- Actions -->
                     <div class="actions">
                         <button class="btn btn-success" onclick="processPayment()" id="process-btn">
-                            Mark as Paid & Print Receipt
+                            <i class="fas fa-check-circle"></i> Mark as Paid & Print Receipt
                         </button>
                         <button class="btn btn-warning" onclick="skipStudent()" id="skip-btn">
-                            Skip (Move to End)
+                            <i class="fas fa-forward"></i> Skip (Move to End)
                         </button>
                         <button class="btn btn-danger" onclick="removeStudent()" id="remove-btn">
-                            Remove from Queue
+                            <i class="fas fa-times-circle"></i> Remove from Queue
                         </button>
                     </div>
                 </div>
@@ -539,8 +731,8 @@ $queue = get_current_queue($conn, $counter_id);
 
             <!-- Recent Transactions -->
             <div class="current-student">
-                <h2>Recent Transactions</h2>
-                <div id="recent-transactions">
+                <h2><i class="fas fa-history"></i> Recent Transactions</h2>
+                <div id="recent-transactions" style="color: white;">
                     <?php echo get_recent_accountant_transactions($conn, $accountant_id); ?>
                 </div>
             </div>
@@ -551,15 +743,20 @@ $queue = get_current_queue($conn, $counter_id);
     <div class="modal" id="receipt-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Payment Receipt</h2>
+                <h2><i class="fas fa-receipt"></i> Payment Receipt</h2>
                 <button class="close" onclick="closeReceipt()">&times;</button>
             </div>
             <div class="receipt" id="receipt-content">
                 <!-- Receipt content will be generated here -->
             </div>
             <div class="actions" style="margin-top: 20px;">
-                <button class="btn btn-primary" onclick="printReceipt()">Print Receipt</button>
-                <button class="btn" onclick="closeReceipt()" style="background: #6c757d; color: white;">Close</button>
+                <button class="btn btn-primary" onclick="printReceipt()">
+                    <i class="fas fa-print"></i> Print Receipt
+                </button>
+                <button class="btn" onclick="closeReceipt()"
+                    style="background: rgba(108, 117, 125, 0.3); color: white;">
+                    <i class="fas fa-times"></i> Close
+                </button>
             </div>
         </div>
     </div>
@@ -664,7 +861,7 @@ $queue = get_current_queue($conn, $counter_id);
 
             // Add total row
             html += `
-            <tr style="background: #f8f9fa; font-weight: bold;">
+            <tr style="background: rgba(255, 255, 255, 0.1); font-weight: bold;">
                 <td colspan="4" style="text-align: right;">Total Amount:</td>
                 <td>₹${totalAmount.toFixed(2)}</td>
             </tr>`;
@@ -831,7 +1028,7 @@ $queue = get_current_queue($conn, $counter_id);
                 <head>
                     <title>Print Receipt</title>
                     <style>
-                        body { font-family: 'Courier New', monospace; padding: 20px; }
+                        body { font-family: 'Courier New', monospace; padding: 20px; background: white; color: black; }
                         .receipt-header { text-align: center; margin-bottom: 20px; }
                         .receipt-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
                         .receipt-table th, .receipt-table td { padding: 8px; border-bottom: 1px dashed #000; }
