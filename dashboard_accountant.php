@@ -11,9 +11,93 @@ $accountant_id = $_SESSION['accountant_id'];
 $counter_id = $_SESSION['counter_id'];
 
 // Get accountant and counter details
+function get_accountant_details($conn, $accountant_id)
+{
+    try {
+        $sql = "SELECT * FROM accountants WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$accountant_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return null;
+    }
+}
+
+function get_counter_details($conn, $counter_id)
+{
+    try {
+        $sql = "SELECT * FROM counters WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$counter_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return null;
+    }
+}
+
+function get_current_queue($conn, $counter_id)
+{
+    try {
+        $sql = "SELECT q.id as queue_id, q.student_id, q.position, q.status, 
+                       s.full_name, s.roll_number, s.academic_year, s.branch, s.email
+                FROM queue q 
+                JOIN students s ON q.student_id = s.id 
+                WHERE q.counter_id = ? AND (q.status = 'waiting' OR q.status = 'processing')
+                ORDER BY q.position ASC";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$counter_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return [];
+    }
+}
+
+function get_recent_accountant_transactions($conn, $accountant_id)
+{
+    try {
+        $sql = "SELECT t.receipt_number, s.full_name, t.amount_paid, t.created_at,
+                       GROUP_CONCAT(ft.name) as fee_types
+                FROM transactions t
+                JOIN students s ON t.student_id = s.id
+                JOIN fee_types ft ON t.fee_type_id = ft.id
+                WHERE t.accountant_id = ?
+                GROUP BY t.id
+                ORDER BY t.created_at DESC
+                LIMIT 10";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$accountant_id]);
+        $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (empty($transactions)) {
+            return '<p style="text-align: center; color: rgba(255, 255, 255, 0.8); padding: 20px;">No recent transactions</p>';
+        }
+
+        $html = '<table class="fee-table" style="width: 100%;">';
+        $html .= '<thead><tr><th>Receipt No</th><th>Student</th><th>Amount</th><th>Date</th></tr></thead>';
+        $html .= '<tbody>';
+        foreach ($transactions as $transaction) {
+            $html .= '<tr>';
+            $html .= '<td>' . htmlspecialchars($transaction['receipt_number']) . '</td>';
+            $html .= '<td>' . htmlspecialchars($transaction['full_name']) . '</td>';
+            $html .= '<td>₹' . number_format($transaction['amount_paid'], 2) . '</td>';
+            $html .= '<td>' . date('M d, H:i', strtotime($transaction['created_at'])) . '</td>';
+            $html .= '</tr>';
+        }
+        $html .= '</tbody></table>';
+        return $html;
+    } catch (PDOException $e) {
+        return '<p style="text-align: center; color: rgba(255, 255, 255, 0.8); padding: 20px;">Error loading transactions</p>';
+    }
+}
+
 $accountant = get_accountant_details($conn, $accountant_id);
 $counter = get_counter_details($conn, $counter_id);
 $queue = get_current_queue($conn, $counter_id);
+
+if (!$accountant || !$counter) {
+    header('Location: logout.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -236,7 +320,6 @@ $queue = get_current_queue($conn, $counter_id);
             overflow-y: auto;
             flex: 1;
             margin-bottom: 80px;
-            /* Space for logout button */
         }
 
         .queue-item {
@@ -415,20 +498,6 @@ $queue = get_current_queue($conn, $counter_id);
             font-weight: bold;
             color: white;
             backdrop-filter: blur(5px);
-        }
-
-        .amount-input {
-            width: 120px;
-            padding: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-            text-align: right;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .amount-input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
         }
 
         /* Actions */
@@ -662,10 +731,12 @@ $queue = get_current_queue($conn, $counter_id);
     <div class="header">
         <div class="header-info">
             <h1>Accountant Dashboard</h1>
-            <p>Welcome, <?php echo $accountant['full_name']; ?> | <?php echo $accountant['accountant_id']; ?></p>
+            <p>Welcome, <?php echo htmlspecialchars($accountant['full_name']); ?> |
+                <?php echo htmlspecialchars($accountant['accountant_id']); ?>
+            </p>
         </div>
         <div class="counter-badge">
-            <?php echo $counter['name']; ?> - <?php echo $counter['location']; ?>
+            <?php echo htmlspecialchars($counter['name']); ?> - <?php echo htmlspecialchars($counter['location']); ?>
         </div>
     </div>
 
@@ -678,9 +749,15 @@ $queue = get_current_queue($conn, $counter_id);
                 <div class="stats-grid">
                     <div class="stat waiting">
                         <div class="number" id="waiting-count">
-                            <?php echo count(array_filter($queue, function ($q) {
-                                return $q['status'] == 'waiting';
-                            })); ?>
+                            <?php
+                            $waiting_count = 0;
+                            foreach ($queue as $q) {
+                                if (isset($q['status']) && $q['status'] == 'waiting') {
+                                    $waiting_count++;
+                                }
+                            }
+                            echo $waiting_count;
+                            ?>
                         </div>
                         <div class="label">Waiting</div>
                     </div>
@@ -706,8 +783,8 @@ $queue = get_current_queue($conn, $counter_id);
                                     <?php echo strtoupper(substr($student['full_name'], 0, 1)); ?>
                                 </div>
                                 <div class="student-details">
-                                    <h4><?php echo $student['full_name']; ?></h4>
-                                    <p><?php echo $student['roll_number']; ?></p>
+                                    <h4><?php echo htmlspecialchars($student['full_name']); ?></h4>
+                                    <p><?php echo htmlspecialchars($student['roll_number']); ?></p>
                                     <span class="queue-position">Position: <?php echo $student['position']; ?></span>
                                 </div>
                             </div>
@@ -820,6 +897,17 @@ $queue = get_current_queue($conn, $counter_id);
         let currentQueueId = null;
         let currentStudentId = null;
 
+        // Add click event listeners to queue items
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.queue-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    const queueId = this.getAttribute('data-queue-id');
+                    const studentId = this.getAttribute('data-student-id');
+                    selectStudent(queueId, studentId);
+                });
+            });
+        });
+
         // Auto-refresh queue every 10 seconds
         setInterval(refreshQueue, 10000);
 
@@ -829,6 +917,9 @@ $queue = get_current_queue($conn, $counter_id);
                 .then(data => {
                     updateQueueList(data.queue);
                     updateQueueStats(data.stats);
+                })
+                .catch(error => {
+                    console.error('Error refreshing queue:', error);
                 });
         }
 
@@ -843,7 +934,7 @@ $queue = get_current_queue($conn, $counter_id);
             let html = '';
             queue.forEach(student => {
                 html += `
-                <div class="queue-item" data-queue-id="${student.queue_id}" data-student-id="${student.student_id}" onclick="selectStudent(${student.queue_id}, ${student.student_id})">
+                <div class="queue-item" data-queue-id="${student.queue_id}" data-student-id="${student.student_id}">
                     <div class="student-info">
                         <div class="student-avatar">
                             ${student.full_name.charAt(0).toUpperCase()}
@@ -858,11 +949,24 @@ $queue = get_current_queue($conn, $counter_id);
             });
 
             queueList.innerHTML = html;
+
+            // Re-add click event listeners
+            document.querySelectorAll('.queue-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    const queueId = this.getAttribute('data-queue-id');
+                    const studentId = this.getAttribute('data-student-id');
+                    selectStudent(queueId, studentId);
+                });
+            });
         }
 
         function updateQueueStats(stats) {
-            document.getElementById('waiting-count').textContent = stats.waiting;
-            document.getElementById('completed-count').textContent = stats.completed_today;
+            if (stats.waiting !== undefined) {
+                document.getElementById('waiting-count').textContent = stats.waiting;
+            }
+            if (stats.completed_today !== undefined) {
+                document.getElementById('completed-count').textContent = stats.completed_today;
+            }
         }
 
         function selectStudent(queueId, studentId) {
@@ -873,7 +977,10 @@ $queue = get_current_queue($conn, $counter_id);
             document.querySelectorAll('.queue-item').forEach(item => {
                 item.classList.remove('active', 'processing');
             });
-            document.querySelector(`[data-queue-id="${queueId}"]`).classList.add('processing');
+            const selectedItem = document.querySelector(`[data-queue-id="${queueId}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('processing');
+            }
 
             // Show student details
             document.getElementById('no-student-message').style.display = 'none';
@@ -885,7 +992,13 @@ $queue = get_current_queue($conn, $counter_id);
                 .then(data => {
                     if (data.success) {
                         displayStudentDetails(data.student, data.fees);
+                    } else {
+                        alert('Error loading student details: ' + (data.message || 'Unknown error'));
                     }
+                })
+                .catch(error => {
+                    console.error('Error loading student details:', error);
+                    alert('Error loading student details. Please try again.');
                 });
         }
 
@@ -902,24 +1015,31 @@ $queue = get_current_queue($conn, $counter_id);
             let html = '';
             let totalAmount = 0;
 
-            fees.forEach(fee => {
-                totalAmount += parseFloat(fee.amount_to_pay);
-                html += `
-                <tr>
-                    <td>${fee.fee_name}</td>
-                    <td>₹${parseFloat(fee.total_amount).toFixed(2)}</td>
-                    <td>₹${parseFloat(fee.paid_amount).toFixed(2)}</td>
-                    <td>₹${parseFloat(fee.remaining_amount).toFixed(2)}</td>
-                    <td>₹${parseFloat(fee.amount_to_pay).toFixed(2)}</td>
-                </tr>`;
-            });
+            if (fees && fees.length > 0) {
+                fees.forEach(fee => {
+                    const amountToPay = parseFloat(fee.amount_to_pay) || 0;
+                    totalAmount += amountToPay;
+                    html += `
+                    <tr>
+                        <td>${fee.fee_name || 'N/A'}</td>
+                        <td>₹${parseFloat(fee.total_amount || 0).toFixed(2)}</td>
+                        <td>₹${parseFloat(fee.paid_amount || 0).toFixed(2)}</td>
+                        <td>₹${parseFloat(fee.remaining_amount || 0).toFixed(2)}</td>
+                        <td>₹${amountToPay.toFixed(2)}</td>
+                    </tr>`;
+                });
+            } else {
+                html = '<tr><td colspan="5" style="text-align: center;">No fees selected for payment</td></tr>';
+            }
 
             // Add total row
-            html += `
-            <tr style="background: rgba(255, 255, 255, 0.1); font-weight: bold;">
-                <td colspan="4" style="text-align: right;">Total Amount:</td>
-                <td>₹${totalAmount.toFixed(2)}</td>
-            </tr>`;
+            if (fees && fees.length > 0) {
+                html += `
+                <tr style="background: rgba(255, 255, 255, 0.1); font-weight: bold;">
+                    <td colspan="4" style="text-align: right;">Total Amount:</td>
+                    <td>₹${totalAmount.toFixed(2)}</td>
+                </tr>`;
+            }
 
             feeTableBody.innerHTML = html;
         }
@@ -931,12 +1051,17 @@ $queue = get_current_queue($conn, $counter_id);
             }
 
             if (confirm('Mark this payment as completed and generate receipt?')) {
+                const processBtn = document.getElementById('process-btn');
+                const originalText = processBtn.innerHTML;
+                processBtn.disabled = true;
+                processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
                 fetch('ajax/accountant_process_payment.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: `queue_id=${currentQueueId}&student_id=${currentStudentId}`
+                    body: `queue_id=${currentQueueId}&student_id=${currentStudentId}&accountant_id=<?php echo $accountant_id; ?>`
                 })
                     .then(response => response.json())
                     .then(data => {
@@ -945,8 +1070,16 @@ $queue = get_current_queue($conn, $counter_id);
                             refreshQueue();
                             resetStudentDetails();
                         } else {
-                            alert('Error: ' + data.message);
+                            alert('Error: ' + (data.message || 'Unknown error'));
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error processing payment:', error);
+                        alert('Error processing payment. Please try again.');
+                    })
+                    .finally(() => {
+                        processBtn.disabled = false;
+                        processBtn.innerHTML = originalText;
                     });
             }
         }
@@ -971,8 +1104,12 @@ $queue = get_current_queue($conn, $counter_id);
                             refreshQueue();
                             resetStudentDetails();
                         } else {
-                            alert('Error: ' + data.message);
+                            alert('Error: ' + (data.message || 'Unknown error'));
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error skipping student:', error);
+                        alert('Error skipping student. Please try again.');
                     });
             }
         }
@@ -997,8 +1134,12 @@ $queue = get_current_queue($conn, $counter_id);
                             refreshQueue();
                             resetStudentDetails();
                         } else {
-                            alert('Error: ' + data.message);
+                            alert('Error: ' + (data.message || 'Unknown error'));
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error removing student:', error);
+                        alert('Error removing student. Please try again.');
                     });
             }
         }
@@ -1012,61 +1153,66 @@ $queue = get_current_queue($conn, $counter_id);
 
         function showReceipt(receiptData) {
             const receiptContent = document.getElementById('receipt-content');
-            receiptContent.innerHTML = `
-                <div class="receipt-header">
-                    <h1>COLLEGE FEE RECEIPT</h1>
-                    <p>${receiptData.college_name}</p>
-                    <p>${receiptData.college_address}</p>
-                </div>
-                
-                <div class="receipt-details">
-                    <table style="width: 100%;">
-                        <tr>
-                            <td><strong>Receipt No:</strong> ${receiptData.receipt_number}</td>
-                            <td><strong>Date:</strong> ${receiptData.payment_date}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Student Name:</strong> ${receiptData.student_name}</td>
-                            <td><strong>Roll No:</strong> ${receiptData.roll_number}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Year & Branch:</strong> ${receiptData.year_branch}</td>
-                            <td><strong>Counter:</strong> ${receiptData.counter_name}</td>
-                        </tr>
-                    </table>
-                </div>
 
-                <table class="receipt-table">
-                    <thead>
-                        <tr>
-                            <th>Fee Type</th>
-                            <th>Amount Paid</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${receiptData.fees.map(fee => `
+            if (!receiptData) {
+                receiptContent.innerHTML = '<p style="color: white; text-align: center;">Error generating receipt</p>';
+            } else {
+                receiptContent.innerHTML = `
+                    <div class="receipt-header">
+                        <h1>COLLEGE FEE RECEIPT</h1>
+                        <p>${receiptData.college_name || 'College Name'}</p>
+                        <p>${receiptData.college_address || 'College Address'}</p>
+                    </div>
+                    
+                    <div class="receipt-details">
+                        <table style="width: 100%;">
                             <tr>
-                                <td>${fee.fee_name}</td>
-                                <td>₹${parseFloat(fee.amount_paid).toFixed(2)}</td>
+                                <td><strong>Receipt No:</strong> ${receiptData.receipt_number || 'N/A'}</td>
+                                <td><strong>Date:</strong> ${receiptData.payment_date || new Date().toLocaleDateString()}</td>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                            <tr>
+                                <td><strong>Student Name:</strong> ${receiptData.student_name || 'N/A'}</td>
+                                <td><strong>Roll No:</strong> ${receiptData.roll_number || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Year & Branch:</strong> ${receiptData.year_branch || 'N/A'}</td>
+                                <td><strong>Counter:</strong> ${receiptData.counter_name || 'N/A'}</td>
+                            </tr>
+                        </table>
+                    </div>
 
-                <div class="receipt-total">
-                    <table style="width: 100%;">
-                        <tr>
-                            <td><strong>Total Amount Paid:</strong></td>
-                            <td><strong>₹${parseFloat(receiptData.total_amount).toFixed(2)}</strong></td>
-                        </tr>
+                    <table class="receipt-table">
+                        <thead>
+                            <tr>
+                                <th>Fee Type</th>
+                                <th>Amount Paid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${(receiptData.fees || []).map(fee => `
+                                <tr>
+                                    <td>${fee.fee_name || 'N/A'}</td>
+                                    <td>₹${parseFloat(fee.amount_paid || 0).toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
                     </table>
-                </div>
 
-                <div class="receipt-footer">
-                    <p>Thank you for your payment!</p>
-                    <p>This is a computer generated receipt</p>
-                </div>
-            `;
+                    <div class="receipt-total">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td><strong>Total Amount Paid:</strong></td>
+                                <td><strong>₹${parseFloat(receiptData.total_amount || 0).toFixed(2)}</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="receipt-footer">
+                        <p>Thank you for your payment!</p>
+                        <p>This is a computer generated receipt</p>
+                    </div>
+                `;
+            }
 
             document.getElementById('receipt-modal').style.display = 'block';
         }
