@@ -819,7 +819,7 @@ if (!$student) {
                     Payment</a></li>
             <li><a href="#" onclick="showSection('queue-status')"><i class="fas fa-clock"></i> Queue Status</a></li>
             <li><a href="student/profile.php"><i class="fas fa-user-edit"></i> Update Profile</a></li>
-            <li><a href="student/change_password.php"><i class="fas fa-key"></i> Change Password</a></li>
+            <!--<li><a href="student/change_password.php"><i class="fas fa-key"></i> Change Password</a></li>-->
             <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </div>
