@@ -96,35 +96,168 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update Profile - College Fee System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 10% 20%, rgba(168, 255, 120, 0.3) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 154, 158, 0.3) 0%, transparent 20%),
+                linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            overflow-x: hidden;
+            position: relative;
             padding: 20px;
         }
 
+        /* Black corner overlays */
+        .corner-overlay {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .corner-top-left {
+            top: -200px;
+            left: -200px;
+            background: radial-gradient(circle, #000000 0%, transparent 70%);
+        }
+
+        .corner-bottom-right {
+            bottom: -200px;
+            right: -200px;
+            background: radial-gradient(circle, #000000 0%, transparent 70%);
+        }
+
+        /* Floating elements for visual interest */
+        .floating {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            animation: float 6s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        .floating:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+            background: rgba(168, 255, 120, 0.2);
+        }
+
+        .floating:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            left: 80%;
+            animation-delay: 2s;
+            background: rgba(255, 154, 158, 0.2);
+        }
+
+        .floating:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 20%;
+            left: 85%;
+            animation-delay: 4s;
+            background: rgba(120, 255, 214, 0.2);
+        }
+
+        .floating:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 80%;
+            left: 15%;
+            animation-delay: 1s;
+            background: rgba(250, 208, 196, 0.2);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+        }
+
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            border-radius: 20px 20px 0 0;
+        }
+
+        h2 {
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+            text-align: center;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
         }
 
         .profile-header {
             display: flex;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .profile-picture {
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            background: #007bff;
-            color: white;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -132,7 +265,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             margin-right: 30px;
             position: relative;
             overflow: hidden;
-            border: 3px solid #007bff;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
 
         .profile-picture img {
@@ -149,65 +283,118 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             background: rgba(0, 0, 0, 0.7);
             color: white;
             text-align: center;
-            padding: 8px;
+            padding: 10px;
             cursor: pointer;
             font-size: 12px;
-            transition: background 0.3s;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
         }
 
         .profile-picture .change-btn:hover {
             background: rgba(0, 0, 0, 0.9);
         }
 
+        .profile-info h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 1.6rem;
+        }
+
+        .profile-info p {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 8px 0;
+            font-size: 1rem;
+        }
+
+        .profile-info small {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: white;
+            font-size: 0.95rem;
         }
 
         input,
         select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #a8ff78;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(168, 255, 120, 0.2);
         }
 
         .btn {
-            padding: 12px 25px;
-            background: #007bff;
-            color: white;
+            padding: 15px 30px;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
         }
 
         .btn-success {
-            background: #28a745;
+            background: linear-gradient(to right, #a8ff78, #78ffd6);
+            color: #333;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
         }
 
         .message {
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(5px);
+            border-left: 4px solid;
         }
 
         .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: rgba(212, 237, 218, 0.2);
+            color: #a8ff78;
+            border-left-color: #a8ff78;
         }
 
         .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: rgba(248, 215, 218, 0.2);
+            color: #ff6b6b;
+            border-left-color: #ff6b6b;
         }
 
         .form-row {
@@ -220,23 +407,100 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .file-info {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .password-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .password-section h3 {
+            color: white;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .password-section h3 i {
+            color: #a8ff78;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .corner-overlay {
+                width: 300px;
+                height: 300px;
+            }
+
+            .corner-top-left {
+                top: -150px;
+                left: -150px;
+            }
+
+            .corner-bottom-right {
+                bottom: -150px;
+                right: -150px;
+            }
+
+            .container {
+                padding: 25px 20px;
+            }
+
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .profile-picture {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 10px;
+            }
         }
     </style>
 </head>
 
 <body>
+    <!-- Black corner overlays -->
+    <div class="corner-overlay corner-top-left"></div>
+    <div class="corner-overlay corner-bottom-right"></div>
+
+    <!-- Floating background elements -->
+    <div class="floating"></div>
+    <div class="floating"></div>
+    <div class="floating"></div>
+    <div class="floating"></div>
+
     <div class="container">
-        <h2>Update Profile</h2>
+        <h2><i class="fas fa-user-edit"></i> Update Profile</h2>
 
         <?php if (!empty($message)): ?>
-            <div class="message success"><?php echo $message; ?></div>
+            <div class="message success">
+                <i class="fas fa-check-circle"></i> <?php echo $message; ?>
+            </div>
         <?php endif; ?>
 
         <?php if (!empty($error)): ?>
-            <div class="message error"><?php echo $error; ?></div>
+            <div class="message error">
+                <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
+            </div>
         <?php endif; ?>
 
         <form method="POST" enctype="multipart/form-data" id="profileForm">
@@ -249,35 +513,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div id="profileInitial"><?php echo strtoupper(substr($student['full_name'], 0, 1)); ?></div>
                     <?php endif; ?>
                     <div class="change-btn" onclick="document.getElementById('profile_picture').click()">
-                        Change Photo
+                        <i class="fas fa-camera"></i> Change Photo
                     </div>
                 </div>
-                <div>
+                <div class="profile-info">
                     <h3><?php echo $student['full_name']; ?></h3>
-                    <p><strong>Roll Number:</strong> <?php echo $student['roll_number']; ?></p>
-                    <p><strong>Email:</strong> <?php echo $student['email']; ?> <small>(Cannot be changed)</small></p>
+                    <p><strong><i class="fas fa-id-card"></i> Roll Number:</strong>
+                        <?php echo $student['roll_number']; ?></p>
+                    <p><strong><i class="fas fa-envelope"></i> Email:</strong> <?php echo $student['email']; ?>
+                        <small>(Cannot be changed)</small>
+                    </p>
                 </div>
             </div>
 
             <input type="file" id="profile_picture" name="profile_picture"
                 accept="image/jpeg,image/png,image/gif,image/jpg" style="display: none;" onchange="previewImage(this)">
-            <div class="file-info">Supported formats: JPG, PNG, GIF | Max size: 2MB</div>
+            <div class="file-info"><i class="fas fa-info-circle"></i> Supported formats: JPG, PNG, GIF | Max size: 2MB
+            </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label>Full Name</label>
+                    <label><i class="fas fa-user"></i> Full Name</label>
                     <input type="text" name="full_name" value="<?php echo htmlspecialchars($student['full_name']); ?>"
                         required>
                 </div>
                 <div class="form-group">
-                    <label>Phone Number</label>
+                    <label><i class="fas fa-phone"></i> Phone Number</label>
                     <input type="tel" name="phone" value="<?php echo htmlspecialchars($student['phone']); ?>" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label>Academic Year</label>
+                    <label><i class="fas fa-calendar-alt"></i> Academic Year</label>
                     <select name="academic_year" required>
                         <option value="1st Year" <?php echo $student['academic_year'] == '1st Year' ? 'selected' : ''; ?>>
                             1st Year</option>
@@ -290,7 +558,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Branch</label>
+                    <label><i class="fas fa-code-branch"></i> Branch</label>
                     <select name="branch" required>
                         <option value="CSE" <?php echo $student['branch'] == 'CSE' ? 'selected' : ''; ?>>Computer Science
                         </option>
@@ -302,35 +570,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Section</label>
+                    <label><i class="fas fa-users"></i> Section</label>
                     <input type="text" name="section" value="<?php echo htmlspecialchars($student['section'] ?? ''); ?>"
                         placeholder="e.g., A, B, C">
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-success">Update Profile</button>
-            <a href="../dashboard_student.php" class="btn" style="background: #6c757d; color: white;">Back to
-                Dashboard</a>
+            <div style="display: flex; gap: 15px; margin-top: 30px;">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Update Profile
+                </button>
+                <a href="../dashboard_student.php" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
         </form>
 
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-            <h3>Change Password</h3>
+        <div class="password-section">
+            <h3><i class="fas fa-key"></i> Change Password</h3>
             <form method="POST" action="change_password.php" id="passwordForm">
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Current Password</label>
+                        <label><i class="fas fa-lock"></i> Current Password</label>
                         <input type="password" name="current_password" required>
                     </div>
                     <div class="form-group">
-                        <label>New Password</label>
+                        <label><i class="fas fa-lock"></i> New Password</label>
                         <input type="password" name="new_password" required minlength="6">
                     </div>
                     <div class="form-group">
-                        <label>Confirm New Password</label>
+                        <label><i class="fas fa-lock"></i> Confirm New Password</label>
                         <input type="password" name="confirm_password" required minlength="6">
                     </div>
                 </div>
-                <button type="submit" class="btn">Change Password</button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-key"></i> Change Password
+                </button>
             </form>
         </div>
     </div>
@@ -361,7 +636,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     profilePictureContainer.innerHTML = `
                         <img src="${e.target.result}" alt="Profile Picture" id="profileImage">
                         <div class="change-btn" onclick="document.getElementById('profile_picture').click()">
-                            Change Photo
+                            <i class="fas fa-camera"></i> Change Photo
                         </div>
                     `;
                 }
