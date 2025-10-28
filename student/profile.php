@@ -24,7 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $phone = clean_input($_POST['phone']);
     $academic_year = clean_input($_POST['academic_year']);
     $branch = clean_input($_POST['branch']);
-    $section = clean_input($_POST['section']);
+
+    // Check if section exists in the form before using it
+    $section = isset($_POST['section']) ? clean_input($_POST['section']) : '';
 
     // Handle profile picture upload
     $profile_picture = $student['profile_picture']; // Keep current picture by default
@@ -75,16 +77,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Update student details if no error
     if (empty($error)) {
-        $sql = "UPDATE students SET full_name = ?, phone = ?, academic_year = ?, branch = ?, section = ?, profile_picture = ? WHERE id = ?";
-        $stmt = $conn->prepare($sql);
-        $success = $stmt->execute([$full_name, $phone, $academic_year, $branch, $section, $profile_picture, $student_id]);
+        try {
+            // First, check if section column exists in the table
+            $check_column_sql = "SHOW COLUMNS FROM students LIKE 'section'";
+            $column_stmt = $conn->query($check_column_sql);
+            $section_column_exists = $column_stmt->rowCount() > 0;
 
-        if ($success) {
-            $message = "Profile updated successfully!";
-            // Refresh student data
-            $student = get_student_details($conn, $student_id);
-        } else {
-            $error = "Failed to update profile!";
+            if ($section_column_exists) {
+                $sql = "UPDATE students SET full_name = ?, phone = ?, academic_year = ?, branch = ?, section = ?, profile_picture = ? WHERE id = ?";
+                $stmt = $conn->prepare($sql);
+                $success = $stmt->execute([$full_name, $phone, $academic_year, $branch, $section, $profile_picture, $student_id]);
+            } else {
+                // If section column doesn't exist, update without it
+                $sql = "UPDATE students SET full_name = ?, phone = ?, academic_year = ?, branch = ?, profile_picture = ? WHERE id = ?";
+                $stmt = $conn->prepare($sql);
+                $success = $stmt->execute([$full_name, $phone, $academic_year, $branch, $profile_picture, $student_id]);
+            }
+
+            if ($success) {
+                $message = "Profile updated successfully!";
+                // Refresh student data
+                $student = get_student_details($conn, $student_id);
+            } else {
+                $error = "Failed to update profile!";
+            }
+        } catch (PDOException $e) {
+            $error = "Database error: " . $e->getMessage();
         }
     }
 }

@@ -815,9 +815,10 @@ if (!$student) {
         </div>
 
         <ul class="nav-links">
-            <li><a href="#" class="active" onclick="showSection('fee-payment')"><i class="fas fa-credit-card"></i> Fee
+            <li><a href="#" class="active nav-link" data-section="fee-payment"><i class="fas fa-credit-card"></i> Fee
                     Payment</a></li>
-            <li><a href="#" onclick="showSection('queue-status')"><i class="fas fa-clock"></i> Queue Status</a></li>
+            <li><a href="#" class="nav-link" data-section="queue-status"><i class="fas fa-clock"></i> Queue Status</a>
+            </li>
             <li><a href="student/profile.php"><i class="fas fa-user-edit"></i> Update Profile</a></li>
             <!--<li><a href="student/change_password.php"><i class="fas fa-key"></i> Change Password</a></li>-->
             <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
@@ -973,6 +974,21 @@ if (!$student) {
         document.addEventListener('DOMContentLoaded', function () {
             showSection('fee-payment');
             checkCurrentQueue();
+
+            // Add event listeners to navigation links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+
+                    // Update active nav link
+                    document.querySelectorAll('.nav-link').forEach(nav => {
+                        nav.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
         });
 
         function showSection(sectionName) {
@@ -995,11 +1011,14 @@ if (!$student) {
                 targetSection.style.display = 'block';
             }
 
-            // Update active nav link
-            document.querySelectorAll('.nav-links a').forEach(link => {
-                link.classList.remove('active');
-            });
-            event.target.classList.add('active');
+            // If showing queue status, start updates
+            if (sectionName === 'queue-status') {
+                refreshQueueStatus();
+                if (queueInterval) {
+                    clearInterval(queueInterval);
+                }
+                queueInterval = setInterval(refreshQueueStatus, 3000);
+            }
         }
 
         function selectCounter(counterId, element) {
@@ -1111,6 +1130,7 @@ if (!$student) {
 
             const formData = new FormData();
             formData.append('counter_id', selectedCounterId);
+            formData.append('student_id', <?php echo $student_id; ?>);
             formData.append('fee_types', JSON.stringify(selectedFees));
 
             // Show loading state
@@ -1133,6 +1153,7 @@ if (!$student) {
                     if (data.success) {
                         showSection('queue-status');
                         startQueueUpdates();
+                        alert('Successfully joined the queue!');
                     } else {
                         alert(data.message || 'Failed to join queue. Please try again.');
                     }
@@ -1148,7 +1169,7 @@ if (!$student) {
         }
 
         function checkCurrentQueue() {
-            fetch('ajax/check_queue.php')
+            fetch('ajax/check_queue.php?student_id=<?php echo $student_id; ?>')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -1178,7 +1199,7 @@ if (!$student) {
         }
 
         function refreshQueueStatus() {
-            fetch('ajax/get_queue_status.php')
+            fetch('ajax/get_queue_status.php?student_id=<?php echo $student_id; ?>')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -1247,7 +1268,13 @@ if (!$student) {
 
         function leaveQueue() {
             if (confirm('Are you sure you want to leave the queue? Your position will be lost.')) {
-                fetch('ajax/leave_queue.php', { method: 'POST' })
+                fetch('ajax/leave_queue.php', {
+                    method: 'POST',
+                    body: JSON.stringify({ student_id: <?php echo $student_id; ?> }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Network response was not ok');
